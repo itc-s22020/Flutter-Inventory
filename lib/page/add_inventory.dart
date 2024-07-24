@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventory/getx/navigation.dart';
 
 class AddInventoryPage extends StatelessWidget {
   const AddInventoryPage({super.key});
@@ -6,7 +7,18 @@ class AddInventoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-        body: Center(child: Text("#AddInventoryPage"))
+        body: Center(
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("#AddInventoryPage"),
+                  OutlinedButton(
+                      onPressed: toInventory,
+                      child: Text("toInventory")
+                  )
+                ]
+            )
+        )
     );
   }
 }
