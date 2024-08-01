@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:inventory/page/add_inventory.dart';
 import 'package:inventory/page/inventory.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-
 import 'folder.dart';
 
 class HomePage extends StatelessWidget {
@@ -10,7 +8,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final pages = [
       const FolderPage(),
       const InventoryPage(),
@@ -21,13 +18,20 @@ class HomePage extends StatelessWidget {
         context,
         screens: pages,
         navBarStyle: NavBarStyle.style1,
+        animationSettings: const NavBarAnimationSettings(
+          screenTransitionAnimation: ScreenTransitionAnimationSettings(
+            animateTabTransition: true,
+            duration: Duration(milliseconds: 300),
+            screenTransitionAnimationType: ScreenTransitionAnimationType.slide
+          )
+        ),
         items: [
           PersistentBottomNavBarItem(
               icon: const Icon(Icons.folder_open),
               inactiveIcon: const Icon(Icons.folder),
               title: "Folder",
               activeColorPrimary: Theme.of(context).primaryColor,
-              inactiveColorPrimary: Theme.of(context).disabledColor
+              inactiveColorPrimary: Theme.of(context).disabledColor,
           ),
           PersistentBottomNavBarItem(
               icon: const Icon(Icons.widgets),
@@ -37,6 +41,7 @@ class HomePage extends StatelessWidget {
               inactiveColorPrimary: Theme.of(context).disabledColor
           ),
         ],
+
       )
     );
   }

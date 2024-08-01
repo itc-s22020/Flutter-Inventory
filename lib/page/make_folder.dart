@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:inventory/getx/navigation.dart';
+import 'package:inventory/navigation.dart';
 
 class MakeFolderPage extends StatelessWidget {
   const MakeFolderPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
         body: Center(
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("#MakeFolderPage"),
+                  const Text("#MakeFolderPage"),
                   OutlinedButton(
-                      onPressed: toFolder,
-                      child: Text("toFolder")
+                      onPressed: () => toBack(context),
+                      child: const Text("toFolder")
                   )
                 ]
             )
