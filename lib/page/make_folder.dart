@@ -13,8 +13,8 @@ class MakeFolderPage extends StatelessWidget {
                 children: [
                   Text("#MakeFolderPage"),
                   OutlinedButton(
-                      onPressed: toHome,
-                      child: Text("toHome")
+                      onPressed: toFolder,
+                      child: Text("toFolder")
                   )
                 ]
             )

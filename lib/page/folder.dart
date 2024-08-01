@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:inventory/getx/navigation.dart';
 
-class InventoryPage extends StatelessWidget {
-  const InventoryPage({super.key});
+class FolderPage extends StatelessWidget {
+  const FolderPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,10 +11,10 @@ class InventoryPage extends StatelessWidget {
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("#InventoryPage"),
+                  Text("#FolderPage"),
                   OutlinedButton(
-                      onPressed: toAddInventory,
-                      child: Text("toAddInventory")
+                      onPressed: toMakeFolder,
+                      child: Text("toMakeFolder")
                   )
                 ]
             )
