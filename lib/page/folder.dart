@@ -6,20 +6,17 @@ class FolderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("#FolderPage"),
-                OutlinedButton(
-                    onPressed: () => toMakeFolder(context),
-                    child: const Text("toMakeFolder")
-                )
-              ]
-          )
-      ),
+    return const Center(
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("#FolderPage"),
+              OutlinedButton(
+                  onPressed: toMakeFolder,
+                  child: Text("toMakeFolder")
+              )
+            ]
+        )
     );
-
   }
 }

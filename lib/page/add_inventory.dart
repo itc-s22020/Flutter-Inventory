@@ -6,15 +6,15 @@ class AddInventoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
         body: Center(
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("#AddInventoryPage"),
+                  Text("#AddInventoryPage"),
                   OutlinedButton(
-                      onPressed: () => toInventory(context),
-                      child: const Text("toInventory")
+                      onPressed: toBack,
+                      child: Text("toInventory")
                   )
                 ]
             )

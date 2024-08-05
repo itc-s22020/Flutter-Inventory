@@ -6,15 +6,15 @@ class MakeFolderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
         body: Center(
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("#MakeFolderPage"),
+                  Text("#MakeFolderPage"),
                   OutlinedButton(
-                      onPressed: () => toBack(context),
-                      child: const Text("toFolder")
+                      onPressed: toBack,
+                      child: Text("toFolder")
                   )
                 ]
             )

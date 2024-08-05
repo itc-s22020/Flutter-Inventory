@@ -1,48 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:inventory/page/inventory.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'folder.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final pages = [
-      const FolderPage(),
-      const InventoryPage(),
-    ];
+  State<HomePage> createState() => _HomePageState();
+}
 
-    return  Scaffold(
-      body: PersistentTabView(
-        context,
-        screens: pages,
-        navBarStyle: NavBarStyle.style1,
-        animationSettings: const NavBarAnimationSettings(
-          screenTransitionAnimation: ScreenTransitionAnimationSettings(
-            animateTabTransition: true,
-            duration: Duration(milliseconds: 300),
-            screenTransitionAnimationType: ScreenTransitionAnimationType.slide
-          )
-        ),
-        items: [
-          PersistentBottomNavBarItem(
-              icon: const Icon(Icons.folder_open),
-              inactiveIcon: const Icon(Icons.folder),
-              title: "Folder",
-              activeColorPrimary: Theme.of(context).primaryColor,
-              inactiveColorPrimary: Theme.of(context).disabledColor,
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = [
+    const FolderPage(),
+    const InventoryPage(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.folder),
+            activeIcon: Icon(Icons.folder_open),
+            label: 'Folder',
           ),
-          PersistentBottomNavBarItem(
-              icon: const Icon(Icons.widgets),
-              inactiveIcon: const Icon(Icons.inventory),
-              title: "Inventory",
-              activeColorPrimary: Theme.of(context).primaryColor,
-              inactiveColorPrimary: Theme.of(context).disabledColor
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory),
+            activeIcon: Icon(Icons.widgets),
+            label: 'Inventory',
           ),
         ],
-
-      )
+        currentIndex: _selectedIndex,
+        selectedItemColor: Theme.of(context).primaryColor,
+        unselectedItemColor: Theme.of(context).disabledColor,
+        onTap: _onItemTapped,
+      ),
     );
   }
 }
