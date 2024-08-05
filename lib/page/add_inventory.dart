@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:inventory/navigation.dart';
+import 'package:inventory/getx/navigation.dart';
 
 class AddInventoryPage extends StatelessWidget {
   const AddInventoryPage({super.key});

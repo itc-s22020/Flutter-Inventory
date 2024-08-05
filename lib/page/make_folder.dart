@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:inventory/navigation.dart';
+import 'package:inventory/getx/navigation.dart';
 
 class MakeFolderPage extends StatelessWidget {
   const MakeFolderPage({super.key});
