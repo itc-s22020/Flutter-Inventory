@@ -9,7 +9,7 @@ void main() async {
 
   runApp(const GetMaterialApp(
     title: "Inventory",
-    home: HomePage(),
+    home: HomePage(initialIndex: 0),
     initialRoute: "/",
   ));
 }

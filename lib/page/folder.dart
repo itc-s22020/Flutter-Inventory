@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:inventory/getx/navigation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../sembast/inventory_service.dart';
 
 class FolderPage extends StatelessWidget {
@@ -94,7 +96,7 @@ class FolderPage extends StatelessWidget {
       if (categoryNames.contains(category)) {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('フォルダ名 "$category" が重複 (エラー)')),
+          SnackBar(content: Text('フォルダ "$category" が重複 (エラー)')),
         );
         Navigator.of(context).pop();
         return;
@@ -110,9 +112,14 @@ class FolderPage extends StatelessWidget {
       Navigator.of(context).pop();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error creating folder: $e (エラー)')),
+        SnackBar(content: Text('Error creating folder: $e')),
       );
     }
+  }
+
+  Future<void> _saveLastUsedFolder(String folderName) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_used_folder', folderName);
   }
 
   @override
@@ -142,7 +149,8 @@ class FolderPage extends StatelessWidget {
                       leading: Icon(_icons[category['iconIndex'] as int]),
                       title: Text(category['name'] as String),
                       onTap: () {
-                        // TODO: あとで
+                        toInventory();
+                        _saveLastUsedFolder(category['name'] as String);
                       },
                     );
                   },
@@ -154,6 +162,7 @@ class FolderPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddCategoryDialog(context),
+        heroTag: 'folder',
         child: const Icon(Icons.create_new_folder),
       ),
     );
