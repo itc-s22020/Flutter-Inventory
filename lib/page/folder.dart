@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory/getx/navigation.dart';
 import 'package:inventory/pref/last_used_folder.dart';
 import 'package:inventory/sembast/inventory_service.dart';
+import 'package:inventory/ui/custom_app_bar.dart';
 
 class FolderPage extends StatelessWidget {
   final InventoryService _inventoryService = InventoryService();
@@ -120,9 +121,7 @@ class FolderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Folder'),
-      ),
+      appBar: const CustomAppBar(title: 'Folder'),
       body: ValueListenableBuilder<int>(
         valueListenable: _notifier,
         builder: (context, value, child) {
