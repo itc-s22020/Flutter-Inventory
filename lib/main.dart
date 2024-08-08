@@ -7,9 +7,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseService().init();
 
-  runApp(const GetMaterialApp(
+  runApp( GetMaterialApp(
     title: "Inventory",
-    home: HomePage(initialIndex: 0),
+    theme: ThemeData(fontFamily: 'NotoSansJP'),
+    home: const HomePage(initialIndex: 0),
     initialRoute: "/",
   ));
 }
