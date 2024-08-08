@@ -121,7 +121,7 @@ class FolderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Folder'),
+      appBar: CustomAppBar(title: 'Folder', page: 0),
       body: ValueListenableBuilder<int>(
         valueListenable: _notifier,
         builder: (context, value, child) {

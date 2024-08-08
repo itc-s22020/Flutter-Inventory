@@ -12,7 +12,7 @@ class InventoryPage extends StatelessWidget {
       builder: (context, snapshot) {
         final folderName = snapshot.data ?? '';
         return Scaffold(
-          appBar: CustomAppBar(title: folderName),
+          appBar: CustomAppBar(title: folderName, page: 1),
           body: _buildBody(snapshot),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
