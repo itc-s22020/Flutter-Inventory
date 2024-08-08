@@ -29,20 +29,26 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
       centerTitle: true,
-      leadingWidth: 48,
-      leading: ValueListenableBuilder<IconData>(
-        valueListenable: _viewIconNotifier,
-        builder: (context, icon, child) {
-          return _buildIconButton(
-            icon: icon,
-            onTap: () => _changeViewStyle(page),
-          );
-        },
+      leadingWidth: 56,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 4.0),
+        child: ValueListenableBuilder<IconData>(
+          valueListenable: _viewIconNotifier,
+          builder: (context, icon, child) {
+            return _buildIconButton(
+              icon: icon,
+              onTap: () => _changeViewStyle(page),
+            );
+          },
+        ),
       ),
       actions: [
-        _buildIconButton(
-          icon: Icons.settings,
-          onTap: () => _showSettingDialog(context),
+        Padding(
+          padding: const EdgeInsets.only(right: 4.0),
+          child: _buildIconButton(
+            icon: Icons.settings,
+            onTap: () => _showSettingDialog(context),
+          ),
         ),
       ],
     );
