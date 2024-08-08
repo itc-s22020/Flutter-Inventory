@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inventory/getx/navigation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../sembast/inventory_service.dart';
+import 'package:inventory/pref/last_used_folder.dart';
+import 'package:inventory/sembast/inventory_service.dart';
 
 class FolderPage extends StatelessWidget {
   final InventoryService _inventoryService = InventoryService();
@@ -117,11 +117,6 @@ class FolderPage extends StatelessWidget {
     }
   }
 
-  Future<void> _saveLastUsedFolder(String folderName) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('last_used_folder', folderName);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,7 +145,7 @@ class FolderPage extends StatelessWidget {
                       title: Text(category['name'] as String),
                       onTap: () {
                         toInventory();
-                        _saveLastUsedFolder(category['name'] as String);
+                        saveLastUsedFolder(category['name'] as String);
                       },
                     );
                   },

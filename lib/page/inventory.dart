@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:inventory/pref/last_used_folder.dart';
 
 class InventoryPage extends StatelessWidget {
   const InventoryPage({super.key});
-
-  Future<String?> _getLastUsedFolder() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('last_used_folder');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +11,7 @@ class InventoryPage extends StatelessWidget {
         title: const Text('Inventory'),
       ),
       body: FutureBuilder<String?>(
-        future: _getLastUsedFolder(),
+        future: getLastUsedFolder(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
