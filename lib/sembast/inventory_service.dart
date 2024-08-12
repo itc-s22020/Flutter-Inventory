@@ -5,35 +5,46 @@ class InventoryService {
   final _db = DatabaseService().db;
   final _store = stringMapStoreFactory.store('inventory');
 
-  Future<void> addItem(String category, String name, String image, int iconIndex, String text) async {
-    final finder = Finder(filter: Filter.equals('category', category));
+  Future<void> addCategory(String category, int iconIndex) async {
     final record = _store.record(category);
     await _db.transaction((txn) async {
-      final snapshot = await _store.findFirst(txn, finder: finder);
+      final snapshot = await record.get(txn);
       if (snapshot == null) {
-        await _store.add(txn, {
+        await record.put(txn, {
+          'category': category,
+          'iconIndex': iconIndex,
+          'items': [],
+        });
+      }
+    });
+  }
+
+  Future<void> addItem(String category, String name, String image, int iconIndex, int stock) async {
+    final record = _store.record(category);
+    await _db.transaction((txn) async {
+      final snapshot = await record.get(txn);
+      if (snapshot == null) {
+        await record.put(txn, {
           'category': category,
           'iconIndex': iconIndex,
           'items': [
             {
               'name': name,
               'image': image,
-              'text': text,
+              'stock': stock,
             }
           ],
         });
       } else {
-        final value = snapshot.value as Map<String, dynamic>;
+        final value = snapshot as Map<String, dynamic>;
         final currentItems = (value['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
         final updatedItems = List<Map<String, dynamic>>.from(currentItems)
           ..add({
             'name': name,
             'image': image,
-            'text': text,
+            'stock': stock,
           });
-        await record.put(txn, {
-          'category': category,
-          'iconIndex': iconIndex,
+        await record.update(txn, {
           'items': updatedItems,
         });
       }
@@ -41,15 +52,36 @@ class InventoryService {
   }
 
   Future<List<Map<String, dynamic>>> getItems(String category) async {
-    final finder = Finder(filter: Filter.equals('category', category));
-    final snapshot = await _store.findFirst(_db, finder: finder);
+    final record = _store.record(category);
+    final snapshot = await record.get(_db);
     if (snapshot == null) {
       return [];
     } else {
-      final value = snapshot.value as Map<String, dynamic>;
+      final value = snapshot as Map<String, dynamic>;
       final items = (value['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       return items;
     }
+  }
+
+  Future<void> updateItemStock(String category, String itemName, int newStock) async {
+    final record = _store.record(category);
+    await _db.transaction((txn) async {
+      final snapshot = await record.get(txn);
+      if (snapshot != null) {
+        final value = snapshot as Map<String, dynamic>;
+        final currentItems = (value['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        final updatedItems = currentItems.map((item) {
+          if (item['name'] == itemName) {
+            return {...item, 'stock': newStock};
+          }
+          return item;
+        }).toList();
+
+        await record.update(txn, {
+          'items': updatedItems,
+        });
+      }
+    });
   }
 
   Future<List<Map<String, dynamic>>> getAllCategories() async {

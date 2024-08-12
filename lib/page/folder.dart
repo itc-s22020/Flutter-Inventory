@@ -4,6 +4,8 @@ import 'package:inventory/pref/last_used_folder.dart';
 import 'package:inventory/sembast/inventory_service.dart';
 import 'package:inventory/ui/custom_app_bar.dart';
 
+import '../ui/custom_snack_bar.dart';
+
 class FolderPage extends StatelessWidget {
   final InventoryService _inventoryService = InventoryService();
   final ValueNotifier<int> _notifier = ValueNotifier<int>(0);
@@ -95,25 +97,30 @@ class FolderPage extends StatelessWidget {
       final categoryNames = existingCategories.map((cat) => cat['name'] as String).toList();
 
       if (categoryNames.contains(category)) {
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('フォルダ "$category" が重複 (エラー)')),
+        CustomSnackBar.show(
+          title: 'エラー',
+          message: 'フォルダ "$category" が重複しています',
+          isError: true,
         );
+        if (!context.mounted) return;
         Navigator.of(context).pop();
         return;
       }
 
       int iconIndex = _icons.indexOf(icon);
-      await _inventoryService.addItem(category, '', '', iconIndex, '');
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('フォルダ "$category" を作成')),
+      await _inventoryService.addCategory(category, iconIndex);
+      CustomSnackBar.show(
+        title: '成功',
+        message: 'フォルダ "$category" を作成しました',
       );
       _notifier.value++;
+      if (!context.mounted) return;
       Navigator.of(context).pop();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error creating folder: $e')),
+      CustomSnackBar.show(
+        title: 'エラー',
+        message: 'フォルダの作成に失敗しました: $e',
+        isError: true,
       );
     }
   }
