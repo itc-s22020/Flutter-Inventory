@@ -3,8 +3,7 @@ import 'package:inventory/getx/navigation.dart';
 import 'package:inventory/pref/last_used_folder.dart';
 import 'package:inventory/sembast/inventory_service.dart';
 import 'package:inventory/ui/custom_app_bar.dart';
-
-import '../ui/custom_snack_bar.dart';
+import 'package:inventory/ui/custom_snack_bar.dart';
 
 class FolderPage extends StatelessWidget {
   final InventoryService _inventoryService = InventoryService();
@@ -125,6 +124,121 @@ class FolderPage extends StatelessWidget {
     }
   }
 
+  Future<void> _showFolderOptionsDialog(BuildContext context, String folderName) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Options for $folderName'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Rename'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showRenameFolderDialog(context, folderName);
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteCategory(context, folderName);
+              },
+            ),
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showRenameFolderDialog(BuildContext context, String oldName) async {
+    String newName = '';
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Rename Folder'),
+          content: TextField(
+            autofocus: true,
+            decoration: const InputDecoration(hintText: "Enter new folder name"),
+            onChanged: (value) {
+              newName = value;
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Rename'),
+              onPressed: () {
+                if (newName.isNotEmpty) {
+                  _renameCategory(context, oldName, newName);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _renameCategory(BuildContext context, String oldName, String newName) async {
+    try {
+      final existingCategories = await _inventoryService.getAllCategories();
+      final categoryNames = existingCategories.map((cat) => cat['name'] as String).toList();
+
+      if (categoryNames.contains(newName)) {
+        CustomSnackBar.show(
+          title: 'エラー',
+          message: 'フォルダ "$newName" が既に存在しています',
+          isError: true,
+        );
+        return;
+      }
+
+      await _inventoryService.renameCategory(oldName, newName);
+      CustomSnackBar.show(
+        title: '成功',
+        message: 'フォルダ "$oldName" を "$newName" に変更しました',
+      );
+      _notifier.value++;
+    } catch (e) {
+      CustomSnackBar.show(
+        title: 'エラー',
+        message: 'フォルダの名前変更に失敗しました: $e',
+        isError: true,
+      );
+    }
+  }
+
+  Future<void> _deleteCategory(BuildContext context, String folderName) async {
+    try {
+      await _inventoryService.deleteCategory(folderName);
+      CustomSnackBar.show(
+        title: '成功',
+        message: 'フォルダ "$folderName" を削除しました',
+      );
+      _notifier.value++;
+    } catch (e) {
+      CustomSnackBar.show(
+        title: 'エラー',
+        message: 'フォルダの削除に失敗しました: $e',
+        isError: true,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,6 +267,9 @@ class FolderPage extends StatelessWidget {
                         toInventory();
                         saveLastUsedFolder(category['name'] as String);
                       },
+                      onLongPress: () {
+                        _showFolderOptionsDialog(context, category['name'] as String);
+                      },
                     );
                   },
                 );
@@ -169,3 +286,4 @@ class FolderPage extends StatelessWidget {
     );
   }
 }
+

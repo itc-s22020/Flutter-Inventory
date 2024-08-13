@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomSnackBar {
-  static void show({
+  static Future<void> show({
     required String title,
     required String message,
     bool isError = false,
-  }) {
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    bool showOnlyErrors = prefs.getString('snackBarOnlyError') == 'on';
+
+    if (!isError && showOnlyErrors) {
+      return;
+    }
+
     Get.snackbar(
       '',
       '',

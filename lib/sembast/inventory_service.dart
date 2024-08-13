@@ -94,4 +94,25 @@ class InventoryService {
       };
     }).toList();
   }
+
+  Future<void> renameCategory(String oldName, String newName) async {
+    await _db.transaction((txn) async {
+      final oldRecord = _store.record(oldName);
+      final newRecord = _store.record(newName);
+
+      final oldData = await oldRecord.get(txn);
+      if (oldData != null) {
+        await newRecord.put(txn, {
+          ...oldData as Map<String, dynamic>,
+          'category': newName,
+        });
+        await oldRecord.delete(txn);
+      }
+    });
+  }
+
+  Future<void> deleteCategory(String category) async {
+    final record = _store.record(category);
+    await record.delete(_db);
+  }
 }

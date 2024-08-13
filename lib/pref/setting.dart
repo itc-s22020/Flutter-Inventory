@@ -19,3 +19,15 @@ Future<String> getSnackBarTheme() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getString('snackBarTheme') ?? 'simpleModern';
 }
+
+Future<void> saveSnackBarOnlyError(String theme) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('snackBarOnlyError', theme);
+}
+
+Future<String> getSnackBarOnlyError() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('snackBarOnlyError') ?? 'off';
+}
+
+

@@ -81,6 +81,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Future<void> _showSettingDialog(BuildContext context) async {
     String currentLanguage = await getLanguage();
     String currentSnackBarTheme = await getSnackBarTheme();
+    String currentSnackBarOnlyError = await getSnackBarOnlyError();
 
     if (!context.mounted) return;
     await showDialog(
@@ -88,61 +89,83 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       builder: (BuildContext context) {
         String selectedLanguage = currentLanguage;
         String selectedSnackBarTheme = currentSnackBarTheme;
+        bool snackBarOnlyError = currentSnackBarOnlyError == 'on';
 
-        return AlertDialog(
-          title: const Text('設定'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                value: selectedLanguage,
-                decoration: const InputDecoration(labelText: '言語'),
-                items: ['English', 'Japanese']
-                    .map<DropdownMenuItem<String>>(
-                        (String value) => DropdownMenuItem<String>(
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: const Text('設定'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedLanguage,
+                    decoration: const InputDecoration(labelText: '言語'),
+                    items: ['English', 'Japanese']
+                        .map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
                     ))
-                    .toList(),
-                onChanged: (String? newValue) {
-                  selectedLanguage = newValue ?? currentLanguage;
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedSnackBarTheme,
-                decoration: const InputDecoration(labelText: 'スナックバーテーマ'),
-                items: ['simpleModern']
-                    .map<DropdownMenuItem<String>>(
-                        (String value) => DropdownMenuItem<String>(
+                        .toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedLanguage = newValue ?? currentLanguage;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: selectedSnackBarTheme,
+                    decoration: const InputDecoration(labelText: 'スナックバーテーマ'),
+                    items: ['simpleModern']
+                        .map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
                     ))
-                    .toList(),
-                onChanged: (String? newValue) {
-                  selectedSnackBarTheme = newValue ?? currentSnackBarTheme;
-                },
+                        .toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedSnackBarTheme = newValue ?? currentSnackBarTheme;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('エラーのみスナックバー表示'),
+                      Switch(
+                        value: snackBarOnlyError,
+                        onChanged: (bool value) {
+                          setState(() {
+                            snackBarOnlyError = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('キャンセル'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('保存'),
-              onPressed: () async {
-                await saveLanguage(selectedLanguage);
-                await saveSnackBarTheme(selectedSnackBarTheme);
-                if (!context.mounted) return;
-                Navigator.of(context).pop();
-                // 必要に応じてUIやテーマの更新を行う
-              },
-            ),
-          ],
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('キャンセル'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: const Text('保存'),
+                  onPressed: () async {
+                    await saveLanguage(selectedLanguage);
+                    await saveSnackBarTheme(selectedSnackBarTheme);
+                    await saveSnackBarOnlyError(snackBarOnlyError ? 'on' : 'off');
+                    if (!context.mounted) return;
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );
