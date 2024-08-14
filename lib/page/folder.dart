@@ -185,6 +185,7 @@ class FolderPage extends StatelessWidget {
                 if (newName.isNotEmpty) {
                   _renameCategory(context, oldName, newName);
                 }
+                Navigator.of(context).pop();
               },
             ),
           ],
@@ -207,6 +208,7 @@ class FolderPage extends StatelessWidget {
         return;
       }
 
+      await saveLastUsedFolder(newName);
       await _inventoryService.renameCategory(oldName, newName);
       CustomSnackBar.show(
         title: '成功',
@@ -225,6 +227,7 @@ class FolderPage extends StatelessWidget {
   Future<void> _deleteCategory(BuildContext context, String folderName) async {
     try {
       await _inventoryService.deleteCategory(folderName);
+      await saveLastUsedFolder('');
       CustomSnackBar.show(
         title: '成功',
         message: 'フォルダ "$folderName" を削除しました',

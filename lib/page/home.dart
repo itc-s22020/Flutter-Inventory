@@ -14,20 +14,25 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late int _selectedIndex;
 
-  final List<Widget> _pages = [
-    FolderPage(),
-    InventoryPage(),
-  ];
+  List<Widget> _pages = [];
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
+    _pages = [
+      FolderPage(),
+      InventoryPage(),
+    ];
   }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      if (index == 1) {
+        // InventoryPageをリセット
+        _pages[1] = InventoryPage();
+      }
     });
   }
 
@@ -59,3 +64,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
