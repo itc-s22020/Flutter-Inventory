@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:sembast/sembast.dart';
 import 'database_service.dart';
 
@@ -19,7 +20,7 @@ class InventoryService {
     });
   }
 
-  Future<void> addItem(String category, String name, String image, int iconIndex, int stock) async {
+  Future<void> addItem(String category, String name, Uint8List? image, int iconIndex, int stock) async {
     final record = _store.record(category);
     await _db.transaction((txn) async {
       final snapshot = await record.get(txn);
@@ -30,7 +31,7 @@ class InventoryService {
           'items': [
             {
               'name': name,
-              'image': image,
+              'image': image ?? '',
               'stock': stock,
             }
           ],
@@ -41,7 +42,7 @@ class InventoryService {
         final updatedItems = List<Map<String, dynamic>>.from(currentItems)
           ..add({
             'name': name,
-            'image': image,
+            'image': image ?? '',
             'stock': stock,
           });
         await record.update(txn, {

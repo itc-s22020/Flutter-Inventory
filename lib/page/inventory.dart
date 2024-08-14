@@ -1,12 +1,15 @@
+import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import '../getx/inventory_controller.dart';
-import '../pref/last_used_folder.dart';
-import '../ui/custom_app_bar.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:inventory/getx/inventory_controller.dart';
+import 'package:inventory/pref/last_used_folder.dart';
+import 'package:inventory/ui/custom_app_bar.dart';
 
 class InventoryPage extends StatelessWidget {
-  final InventoryController _inventoryController = Get.put(InventoryController());
+  final InventoryController _inventoryController =
+      Get.put(InventoryController());
 
   InventoryPage({super.key});
 
@@ -35,6 +38,47 @@ class InventoryPage extends StatelessWidget {
   void _showAddItemDialog(BuildContext context, String folderName) {
     String newItemName = '';
     int newItemQuantity = 1;
+    Uint8List? croppedImage;
+    final CropController cropController = CropController();
+
+    Future<void> pickAndCropImage() async {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        final image = await pickedFile.readAsBytes();
+
+        if (!context.mounted) return;
+        await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Crop your image'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Crop(
+                  image: image,
+                  controller: cropController,
+                  onCropped: (croppedData) {
+                    croppedImage = croppedData;
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => cropController.crop(),
+                  child: const Text('Crop'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
 
     showDialog<void>(
       context: context,
@@ -60,6 +104,13 @@ class InventoryPage extends StatelessWidget {
                     newItemQuantity = int.tryParse(value) ?? 1;
                   },
                 ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: pickAndCropImage,
+                  child: const Text('Select and Crop Image'),
+                ),
+                if (croppedImage != null)
+                  Image.memory(croppedImage!, height: 100),
               ],
             ),
           ),
@@ -74,7 +125,12 @@ class InventoryPage extends StatelessWidget {
               child: const Text('Add'),
               onPressed: () async {
                 if (newItemName.isNotEmpty) {
-                  await _inventoryController.addItem(folderName, newItemName, newItemQuantity);
+                  await _inventoryController.addItem(
+                    folderName,
+                    newItemName,
+                    newItemQuantity,
+                    croppedImage,
+                  );
                   if (!context.mounted) return;
                   Navigator.of(context).pop();
                 }
@@ -105,6 +161,22 @@ class InventoryPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final item = items[index];
               return ListTile(
+                leading: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: item['image'] != null && item['image'].isNotEmpty
+                      ? Image.memory(
+                    Uint8List.fromList(List<int>.from(item['image'])),
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                  )
+                      : const Icon(
+                    Icons.image_not_supported,
+                    size: 30,
+                    color: Colors.grey,
+                  ),
+                ),
                 title: Text(
                   item['name'] as String,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -118,7 +190,8 @@ class InventoryPage extends StatelessWidget {
                       onPressed: () async {
                         final newStock = (item['stock'] as int? ?? 1) - 1;
                         if (newStock >= 0) {
-                          await _inventoryController.updateItemStock(folderName, item['name'] as String, newStock);
+                          await _inventoryController.updateItemStock(
+                              folderName, item['name'] as String, newStock);
                         }
                       },
                     ),
@@ -126,7 +199,8 @@ class InventoryPage extends StatelessWidget {
                       icon: const Icon(Icons.add, size: 20),
                       onPressed: () async {
                         final newStock = (item['stock'] as int? ?? 1) + 1;
-                        await _inventoryController.updateItemStock(folderName, item['name'] as String, newStock);
+                        await _inventoryController.updateItemStock(
+                            folderName, item['name'] as String, newStock);
                       },
                     ),
                   ],

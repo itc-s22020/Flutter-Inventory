@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import '../sembast/inventory_service.dart';
-import '../ui/custom_snack_bar.dart';
+import 'package:inventory/sembast/inventory_service.dart';
+import 'package:inventory/ui/custom_snack_bar.dart';
 
 class InventoryController extends GetxController {
   var items = <Map<String, dynamic>>[].obs;
@@ -17,14 +17,14 @@ class InventoryController extends GetxController {
       }
     }
   }
-  Future<bool> addItem(String folderName, String name, int stock) async {
+  Future<bool> addItem(String folderName, String name, int stock, Uint8List? image) async {
     try {
       final existingItems = await _inventoryService.getItems(folderName);
       if (existingItems.any((item) => item['name'] == name)) {
         showSnackBar('Error: $name already exists in $folderName', isError: true);
         return false;
       }
-      await _inventoryService.addItem(folderName, name, '', 0, stock);
+      await _inventoryService.addItem(folderName, name, image, 0, stock);
       await loadItems(folderName);
       showSnackBar('$name added to $folderName');
       return true;
