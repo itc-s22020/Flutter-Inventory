@@ -58,6 +58,9 @@ class InventoryPage extends StatelessWidget {
                 child: Crop(
                   image: image,
                   controller: cropController,
+                  interactive: true,
+                  fixCropRect: true,
+                  cornerDotBuilder: (_, __) => const SizedBox.shrink(),
                   onCropped: (croppedData) {
                     croppedImage = croppedData;
                     Navigator.of(context).pop();
