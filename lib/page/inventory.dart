@@ -200,7 +200,6 @@ class InventoryPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // 在庫数変更ボタン
                       Row(
                         children: [
                           IconButton(
