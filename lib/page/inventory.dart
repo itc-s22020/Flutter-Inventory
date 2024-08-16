@@ -47,6 +47,7 @@ class InventoryPage extends StatelessWidget {
       if (pickedFile != null) {
         final image = await pickedFile.readAsBytes();
 
+
         if (!context.mounted) return;
         await showDialog(
           context: context,
@@ -163,50 +164,67 @@ class InventoryPage extends StatelessWidget {
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
-              return ListTile(
-                leading: SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: item['image'] != null && item['image'].isNotEmpty
-                      ? Image.memory(
-                    Uint8List.fromList(List<int>.from(item['image'])),
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                  )
-                      : const Icon(
-                    Icons.image_not_supported,
-                    size: 30,
-                    color: Colors.grey,
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      // 画像
+                      SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: item['image'] != null && item['image'].isNotEmpty
+                            ? Image.memory(
+                          Uint8List.fromList(List<int>.from(item['image'])),
+                          fit: BoxFit.cover,
+                        )
+                            : const Icon(
+                          Icons.image_not_supported,
+                          size: 40,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // アイテム名と在庫数
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item['name'] as String,
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Obx(() => Text('在庫: ${item['stock'] ?? 0}')),
+                          ],
+                        ),
+                      ),
+                      // 在庫数変更ボタン
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove, size: 20),
+                            onPressed: () {
+                              final newStock = (item['stock'] as int? ?? 1) - 1;
+                              if (newStock >= 0) {
+                                _inventoryController.updateItemStockLocally(item['name'] as String, newStock);
+                                _inventoryController.updateItemStock(folderName, item['name'] as String, newStock);
+                              }
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.add, size: 20),
+                            onPressed: () {
+                              final newStock = (item['stock'] as int? ?? 1) + 1;
+                              _inventoryController.updateItemStockLocally(item['name'] as String, newStock);
+                              _inventoryController.updateItemStock(folderName, item['name'] as String, newStock);
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-                title: Text(
-                  item['name'] as String,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('${item['stock'] ?? 0}'),
-                    IconButton(
-                      icon: const Icon(Icons.remove, size: 20),
-                      onPressed: () async {
-                        final newStock = (item['stock'] as int? ?? 1) - 1;
-                        if (newStock >= 0) {
-                          await _inventoryController.updateItemStock(
-                              folderName, item['name'] as String, newStock);
-                        }
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.add, size: 20),
-                      onPressed: () async {
-                        final newStock = (item['stock'] as int? ?? 1) + 1;
-                        await _inventoryController.updateItemStock(
-                            folderName, item['name'] as String, newStock);
-                      },
-                    ),
-                  ],
                 ),
               );
             },
