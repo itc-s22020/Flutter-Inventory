@@ -85,6 +85,27 @@ class InventoryService {
     });
   }
 
+  Future<void> updateItemImage(String category, String itemName, Uint8List newImage) async {
+    final record = _store.record(category);
+    await _db.transaction((txn) async {
+      final snapshot = await record.get(txn);
+      if (snapshot != null) {
+        final value = snapshot as Map<String, dynamic>;
+        final currentItems = (value['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        final updatedItems = currentItems.map((item) {
+          if (item['name'] == itemName) {
+            return {...item, 'image': newImage};
+          }
+          return item;
+        }).toList();
+
+        await record.update(txn, {
+          'items': updatedItems,
+        });
+      }
+    });
+  }
+
   Future<List<Map<String, dynamic>>> getAllCategories() async {
     final snapshots = await _store.find(_db);
     return snapshots.map((snapshot) {
