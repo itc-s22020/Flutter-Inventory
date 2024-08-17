@@ -20,7 +20,9 @@ class InventoryPage extends StatelessWidget {
       builder: (context, snapshot) {
         final folderName = snapshot.data ?? '';
         if (snapshot.hasData && folderName.isNotEmpty) {
-          _inventoryController.loadItems(folderName);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _inventoryController.loadItems(folderName);
+          });
         }
         return Scaffold(
           appBar: CustomAppBar(title: folderName, page: 1),
@@ -170,7 +172,6 @@ class InventoryPage extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      // 画像
                       SizedBox(
                         width: 60,
                         height: 60,
@@ -186,7 +187,6 @@ class InventoryPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      // アイテム名と在庫数
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

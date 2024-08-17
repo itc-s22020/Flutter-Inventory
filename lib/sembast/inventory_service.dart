@@ -20,36 +20,33 @@ class InventoryService {
     });
   }
 
-  Future<void> addItem(String category, String name, Uint8List? image, int iconIndex, int stock) async {
+  Future<Map<String, dynamic>> addItem(String category, String name, Uint8List? image, int iconIndex, int stock) async {
     final record = _store.record(category);
+    final newItem = {
+      'name': name,
+      'image': image ?? '',
+      'stock': stock,
+    };
+
     await _db.transaction((txn) async {
       final snapshot = await record.get(txn);
       if (snapshot == null) {
         await record.put(txn, {
           'category': category,
           'iconIndex': iconIndex,
-          'items': [
-            {
-              'name': name,
-              'image': image ?? '',
-              'stock': stock,
-            }
-          ],
+          'items': [newItem],
         });
       } else {
         final value = snapshot as Map<String, dynamic>;
         final currentItems = (value['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-        final updatedItems = List<Map<String, dynamic>>.from(currentItems)
-          ..add({
-            'name': name,
-            'image': image ?? '',
-            'stock': stock,
-          });
+        final updatedItems = List<Map<String, dynamic>>.from(currentItems)..add(newItem);
         await record.update(txn, {
           'items': updatedItems,
         });
       }
     });
+
+    return newItem;
   }
 
   Future<List<Map<String, dynamic>>> getItems(String category) async {

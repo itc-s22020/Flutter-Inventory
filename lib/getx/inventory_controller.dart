@@ -9,6 +9,7 @@ class InventoryController extends GetxController {
   final items = <RxMap<String, dynamic>>[].obs;
   final InventoryService _inventoryService = InventoryService();
   final Map<String, Timer> _debounceTimers = {};
+  final Map<String, List<RxMap<String, dynamic>>> _itemCache = {};
 
   Future<void> loadItems(String folderName) async {
     try {
@@ -47,7 +48,7 @@ class InventoryController extends GetxController {
     });
   }
 
-  Future<Uint8List?> optimizeImage(Uint8List originalImage) async {
+  static Uint8List? optimizeImage(Uint8List originalImage) {
     img.Image? image = img.decodeImage(originalImage);
     if (image == null) return null;
 
@@ -60,14 +61,12 @@ class InventoryController extends GetxController {
       );
     }
 
-    List<int> compressedImage = img.encodePng(image);
-
-    return Uint8List.fromList(compressedImage);
+    return Uint8List.fromList(img.encodePng(image));
   }
 
   Future<bool> addItem(String folderName, String name, int stock, Uint8List? image) async {
     try {
-      final existingItems = await _inventoryService.getItems(folderName);
+      final existingItems = _itemCache[folderName] ?? await _inventoryService.getItems(folderName);
       if (existingItems.any((item) => item['name'] == name)) {
         showSnackBar('Error: $name already exists in $folderName', isError: true);
         return false;
@@ -75,11 +74,18 @@ class InventoryController extends GetxController {
 
       Uint8List? optimizedImage;
       if (image != null) {
-        optimizedImage = await optimizeImage(image);
+        optimizedImage = await compute(optimizeImage, image);
       }
 
-      await _inventoryService.addItem(folderName, name, optimizedImage, 0, stock);
-      await loadItems(folderName);
+      final newItem = await _inventoryService.addItem(folderName, name, optimizedImage, 0, stock);
+      if (_itemCache.containsKey(folderName)) {
+        _itemCache[folderName]!.add(RxMap<String, dynamic>.from(newItem));
+      } else {
+        _itemCache[folderName] = [RxMap<String, dynamic>.from(newItem)];
+      }
+
+      items.add(RxMap<String, dynamic>.from(newItem));
+
       showSnackBar('$name added to $folderName');
       return true;
     } catch (e) {
@@ -96,7 +102,7 @@ class InventoryController extends GetxController {
       final items = await _inventoryService.getItems(folderName);
       for (var item in items) {
         if (item['image'] != null && item['image'].isNotEmpty) {
-          Uint8List? optimizedImage = await optimizeImage(Uint8List.fromList(List<int>.from(item['image'])));
+          Uint8List? optimizedImage = optimizeImage(Uint8List.fromList(List<int>.from(item['image'])));
           if (optimizedImage != null) {
             await _inventoryService.updateItemImage(folderName, item['name'], optimizedImage);
           }
