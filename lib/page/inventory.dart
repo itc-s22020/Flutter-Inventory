@@ -4,12 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:inventory/getx/inventory_controller.dart';
-import 'package:inventory/pref/last_used_folder.dart';
-import 'package:inventory/ui/custom_app_bar.dart';
+import '../pref/last_used_folder.dart';
+import '../ui/custom_app_bar.dart';
 
 class InventoryPage extends StatelessWidget {
-  final InventoryController _inventoryController =
-      Get.put(InventoryController());
+  final InventoryController _inventoryController = Get.put(InventoryController());
 
   InventoryPage({super.key});
 
@@ -38,112 +37,10 @@ class InventoryPage extends StatelessWidget {
   }
 
   void _showAddItemDialog(BuildContext context, String folderName) {
-    String newItemName = '';
-    int newItemQuantity = 1;
-    Uint8List? croppedImage;
-    final CropController cropController = CropController();
-
-    Future<void> pickAndCropImage() async {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        final image = await pickedFile.readAsBytes();
-
-
-        if (!context.mounted) return;
-        await showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Crop your image'),
-              content: SizedBox(
-                width: double.maxFinite,
-                child: Crop(
-                  image: image,
-                  controller: cropController,
-                  interactive: true,
-                  fixCropRect: true,
-                  cornerDotBuilder: (_, __) => const SizedBox.shrink(),
-                  onCropped: (croppedData) {
-                    croppedImage = croppedData;
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () => cropController.crop(),
-                  child: const Text('Crop'),
-                ),
-              ],
-            );
-          },
-        );
-      }
-    }
-
     showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Add Item to $folderName'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  autofocus: true,
-                  decoration: const InputDecoration(labelText: "Item name"),
-                  onChanged: (value) {
-                    newItemName = value;
-                  },
-                ),
-                TextField(
-                  decoration: const InputDecoration(labelText: "Quantity"),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (value) {
-                    newItemQuantity = int.tryParse(value) ?? 1;
-                  },
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: pickAndCropImage,
-                  child: const Text('Select and Crop Image'),
-                ),
-                if (croppedImage != null)
-                  Image.memory(croppedImage!, height: 100),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Add'),
-              onPressed: () async {
-                if (newItemName.isNotEmpty) {
-                  await _inventoryController.addItem(
-                    folderName,
-                    newItemName,
-                    newItemQuantity,
-                    croppedImage,
-                  );
-                  if (!context.mounted) return;
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-          ],
-        );
+        return AddItemDialog(folderName: folderName);
       },
     );
   }
@@ -231,5 +128,128 @@ class InventoryPage extends StatelessWidget {
         }
       });
     }
+  }
+}
+
+class AddItemDialog extends StatelessWidget {
+  final String folderName;
+
+  AddItemDialog({required this.folderName, super.key});
+
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController quantityController = TextEditingController(text: '1');
+  final CropController cropController = CropController();
+
+  final Rxn<Uint8List> croppedImage = Rxn<Uint8List>();
+
+  Future<void> pickAndCropImage(BuildContext context) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      final image = await pickedFile.readAsBytes();
+
+      if (!context.mounted) return;
+      await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Crop your image'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Crop(
+                image: image,
+                controller: cropController,
+                interactive: true,
+                fixCropRect: true,
+                cornerDotBuilder: (_, __) => const SizedBox.shrink(),
+                onCropped: (croppedData) {
+                  croppedImage.value = croppedData;
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => cropController.crop(),
+                child: const Text('Crop'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Add Item to $folderName'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              autofocus: true,
+              decoration: const InputDecoration(labelText: "Item name"),
+            ),
+            TextField(
+              controller: quantityController,
+              decoration: const InputDecoration(labelText: "Quantity"),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => pickAndCropImage(context),
+              child: const Text('Select and Crop Image'),
+            ),
+            const SizedBox(height: 20),
+            Obx(() {
+              if (croppedImage.value != null) {
+                return Image.memory(
+                  croppedImage.value!,
+                  height: 100,
+                  width: 100,
+                  fit: BoxFit.cover,
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          child: const Text('Cancel'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        TextButton(
+          child: const Text('Add'),
+          onPressed: () async {
+            final newItemName = nameController.text;
+            final newItemQuantity = int.tryParse(quantityController.text) ?? 1;
+
+            if (newItemName.isNotEmpty) {
+              await Get.find<InventoryController>().addItem(
+                folderName,
+                newItemName,
+                newItemQuantity,
+                croppedImage.value,
+              );
+              if (!context.mounted) return;
+              Navigator.of(context).pop();
+            }
+          },
+        ),
+      ],
+    );
   }
 }
