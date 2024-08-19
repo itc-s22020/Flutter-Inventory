@@ -29,6 +29,32 @@ class InventoryController extends GetxController {
     }
   }
 
+  Future<void> updateItem(String folderName, Map<String, dynamic> oldItem, Map<String, dynamic> newItem) async {
+    try {
+      if (oldItem['name'] != newItem['name']) {
+        await renameItem(folderName, oldItem['name'] as String, newItem['name'] as String);
+      }
+
+      await updateItemStock(folderName, newItem['name'] as String, newItem['stock'] as int);
+
+      if (newItem['image'] != null && newItem['image'] != oldItem['image']) {
+        await updateItemImage(folderName, newItem['name'] as String, Uint8List.fromList(newItem['image'] as List<int>));
+      }
+
+      final index = items.indexWhere((item) => item['name'] == oldItem['name']);
+      if (index != -1) {
+        items[index].assignAll(newItem);
+      }
+
+      update();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating item: $e');
+      }
+      showSnackBar('Error updating item: $e', isError: true);
+    }
+  }
+
   Future<void> updateItemStock(String folderName, String name, int stock) async {
     updateItemStockLocally(name, stock);
 
@@ -46,6 +72,88 @@ class InventoryController extends GetxController {
         loadItems(folderName);
       }
     });
+  }
+
+  Future<bool> renameItem(String folderName, String oldName, String newName) async {
+    try {
+      await _inventoryService.renameItem(folderName, oldName, newName);
+
+      final index = items.indexWhere((item) => item['name'] == oldName);
+      if (index != -1) {
+        items[index]['name'] = newName;
+      }
+
+      if (_itemCache.containsKey(folderName)) {
+        final cacheIndex = _itemCache[folderName]!.indexWhere((item) => item['name'] == oldName);
+        if (cacheIndex != -1) {
+          _itemCache[folderName]![cacheIndex]['name'] = newName;
+        }
+      }
+
+      showSnackBar('Item renamed from $oldName to $newName');
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error renaming item: $e');
+      }
+      showSnackBar('Error renaming item: $e', isError: true);
+      return false;
+    }
+  }
+
+  Future<bool> updateItemImage(String folderName, String name, Uint8List newImage) async {
+    try {
+      Uint8List? optimizedImage = await compute(optimizeImage, newImage);
+
+      if (optimizedImage != null) {
+        await _inventoryService.updateItemImage(folderName, name, optimizedImage);
+
+        final index = items.indexWhere((item) => item['name'] == name);
+        if (index != -1) {
+          items[index]['image'] = optimizedImage;
+        }
+
+        if (_itemCache.containsKey(folderName)) {
+          final cacheIndex = _itemCache[folderName]!.indexWhere((item) => item['name'] == name);
+          if (cacheIndex != -1) {
+            _itemCache[folderName]![cacheIndex]['image'] = optimizedImage;
+          }
+        }
+
+        showSnackBar('Image updated for $name');
+        return true;
+      } else {
+        showSnackBar('Error optimizing image', isError: true);
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating item image: $e');
+      }
+      showSnackBar('Error updating item image: $e', isError: true);
+      return false;
+    }
+  }
+
+  Future<bool> deleteItem(String folderName, String name) async {
+    try {
+      await _inventoryService.deleteItem(folderName, name);
+
+      items.removeWhere((item) => item['name'] == name);
+
+      if (_itemCache.containsKey(folderName)) {
+        _itemCache[folderName]!.removeWhere((item) => item['name'] == name);
+      }
+
+      showSnackBar('$name deleted from $folderName');
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting item: $e');
+      }
+      showSnackBar('Error deleting item: $e', isError: true);
+      return false;
+    }
   }
 
   static Uint8List? optimizeImage(Uint8List originalImage) {

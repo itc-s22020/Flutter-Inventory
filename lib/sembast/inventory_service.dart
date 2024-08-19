@@ -61,6 +61,27 @@ class InventoryService {
     }
   }
 
+  Future<void> renameItem(String category, String oldName, String newName) async {
+    final record = _store.record(category);
+    await _db.transaction((txn) async {
+      final snapshot = await record.get(txn);
+      if (snapshot != null) {
+        final value = snapshot as Map<String, dynamic>;
+        final currentItems = (value['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        final updatedItems = currentItems.map((item) {
+          if (item['name'] == oldName) {
+            return {...item, 'name': newName};
+          }
+          return item;
+        }).toList();
+
+        await record.update(txn, {
+          'items': updatedItems,
+        });
+      }
+    });
+  }
+
   Future<void> updateItemStock(String category, String itemName, int newStock) async {
     final record = _store.record(category);
     await _db.transaction((txn) async {
@@ -74,6 +95,22 @@ class InventoryService {
           }
           return item;
         }).toList();
+
+        await record.update(txn, {
+          'items': updatedItems,
+        });
+      }
+    });
+  }
+
+  Future<void> deleteItem(String category, String itemName) async {
+    final record = _store.record(category);
+    await _db.transaction((txn) async {
+      final snapshot = await record.get(txn);
+      if (snapshot != null) {
+        final value = snapshot as Map<String, dynamic>;
+        final currentItems = (value['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        final updatedItems = currentItems.where((item) => item['name'] != itemName).toList();
 
         await record.update(txn, {
           'items': updatedItems,
