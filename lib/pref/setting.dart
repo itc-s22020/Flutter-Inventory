@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> saveLanguage(String language) async {
@@ -7,17 +8,16 @@ Future<void> saveLanguage(String language) async {
 
 Future<String> getLanguage() async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getString('language') ?? 'English';
-}
-
-Future<void> saveSnackBarTheme(String theme) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('snackBarTheme', theme);
-}
-
-Future<String> getSnackBarTheme() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getString('snackBarTheme') ?? 'simpleModern';
+  String? language = prefs.getString('language');
+  if (language == null) {
+    final locale = Get.deviceLocale?.languageCode;
+    if (locale != 'ja') {
+      return 'English';
+    } else {
+      return 'Japanese';
+    }
+  }
+  return language;
 }
 
 Future<void> saveSnackBarOnlyError(String theme) async {
@@ -29,5 +29,3 @@ Future<String> getSnackBarOnlyError() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getString('snackBarOnlyError') ?? 'off';
 }
-
-

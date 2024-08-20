@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:inventory/pref/folder_view.dart';
-import 'package:inventory/pref/inventory_view.dart';
+import 'package:get/get.dart';
 
+import '../generated/l10n.dart';
+import '../pref/folder_view.dart';
+import '../pref/inventory_view.dart';
 import '../pref/setting.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -18,9 +20,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   Future<void> _updateViewIcon() async {
-    final currentView = page == 0
-        ? await getFolderView()
-        : await getInventoryView();
+    final currentView =
+        page == 0 ? await getFolderView() : await getInventoryView();
     _viewIconNotifier.value = currentView == 'list'
         ? Icons.view_list_rounded
         : Icons.grid_view_rounded;
@@ -56,7 +57,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  Widget _buildIconButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildIconButton(
+      {required IconData icon, required VoidCallback onTap}) {
     return SizedBox(
       width: 48,
       height: 48,
@@ -74,38 +76,39 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Future<void> _changeViewStyle(int page) async {
     (page == 0)
         ? saveFolderView(await getFolderView() == 'list' ? 'grid' : 'list')
-        : saveInventoryView(await getInventoryView() == 'list' ? 'grid' : 'list');
+        : saveInventoryView(
+            await getInventoryView() == 'list' ? 'grid' : 'list');
     _updateViewIcon();
   }
 
   Future<void> _showSettingDialog(BuildContext context) async {
     String currentLanguage = await getLanguage();
-    String currentSnackBarTheme = await getSnackBarTheme();
     String currentSnackBarOnlyError = await getSnackBarOnlyError();
 
     if (!context.mounted) return;
     await showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         String selectedLanguage = currentLanguage;
-        String selectedSnackBarTheme = currentSnackBarTheme;
         bool snackBarOnlyError = currentSnackBarOnlyError == 'on';
 
         return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
+          builder: (BuildContext builderContext, StateSetter setState) {
             return AlertDialog(
-              title: const Text('設定'),
+              title: Text(S.of(builderContext).setting),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<String>(
                     value: selectedLanguage,
-                    decoration: const InputDecoration(labelText: '言語'),
+                    decoration: InputDecoration(
+                        labelText: S.of(builderContext).language),
                     items: ['English', 'Japanese']
-                        .map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    ))
+                        .map<DropdownMenuItem<String>>(
+                            (String value) => DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                ))
                         .toList(),
                     onChanged: (String? newValue) {
                       setState(() {
@@ -113,27 +116,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       });
                     },
                   ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: selectedSnackBarTheme,
-                    decoration: const InputDecoration(labelText: 'スナックバーテーマ'),
-                    items: ['simpleModern']
-                        .map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    ))
-                        .toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedSnackBarTheme = newValue ?? currentSnackBarTheme;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('エラーのみスナックバー表示'),
+                      Text(S.of(builderContext).errorOnly),
                       Switch(
                         value: snackBarOnlyError,
                         onChanged: (bool value) {
@@ -148,19 +135,23 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               actions: <Widget>[
                 TextButton(
-                  child: const Text('キャンセル'),
+                  child: Text(S.of(context).cancel),
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(builderContext).pop();
                   },
                 ),
                 TextButton(
-                  child: const Text('保存'),
+                  child: Text(S.of(context).save),
                   onPressed: () async {
                     await saveLanguage(selectedLanguage);
-                    await saveSnackBarTheme(selectedSnackBarTheme);
-                    await saveSnackBarOnlyError(snackBarOnlyError ? 'on' : 'off');
-                    if (!context.mounted) return;
-                    Navigator.of(context).pop();
+                    await saveSnackBarOnlyError(
+                        snackBarOnlyError ? 'on' : 'off');
+                    Locale locale = (selectedLanguage == 'Japanese')
+                        ? const Locale('ja')
+                        : const Locale('en');
+                    Get.updateLocale(locale);
+                    if (!builderContext.mounted) return;
+                    Navigator.of(builderContext).pop();
                   },
                 ),
               ],

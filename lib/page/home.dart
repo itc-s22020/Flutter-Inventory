@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:inventory/page/inventory.dart';
-import 'package:inventory/page/folder.dart';
+
+import 'folder.dart';
+import 'inventory.dart';
 
 class HomePage extends StatefulWidget {
   final int initialIndex;
@@ -30,7 +31,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _selectedIndex = index;
       if (index == 1) {
-        // InventoryPageをリセット
         _pages[1] = InventoryPage();
       }
     });
@@ -64,4 +64,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-

@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:inventory/getx/inventory_controller.dart';
+
+import '../generated/l10n.dart';
+import '../getx/inventory_controller.dart';
 import '../pref/last_used_folder.dart';
 import '../ui/custom_app_bar.dart';
 
 class InventoryPage extends StatelessWidget {
-  final InventoryController _inventoryController = Get.put(InventoryController());
+  final InventoryController _inventoryController =
+      Get.put(InventoryController());
 
   InventoryPage({super.key});
 
@@ -25,13 +28,13 @@ class InventoryPage extends StatelessWidget {
         }
         return Scaffold(
           appBar: CustomAppBar(title: folderName, page: 1),
-          body: buildBody(snapshot),
+          body: buildBody(snapshot, context),
           floatingActionButton: folderName.isNotEmpty
               ? FloatingActionButton(
-            onPressed: () => _showAddItemDialog(context, folderName),
-            heroTag: 'inventory',
-            child: const Icon(Icons.add),
-          )
+                  onPressed: () => _showAddItemDialog(context, folderName),
+                  heroTag: 'inventory',
+                  child: const Icon(Icons.add),
+                )
               : null,
         );
       },
@@ -48,7 +51,8 @@ class InventoryPage extends StatelessWidget {
     );
   }
 
-  void _showEditItemDialog(BuildContext context, String folderName, Map<String, dynamic> item) {
+  void _showEditItemDialog(
+      BuildContext context, String folderName, Map<String, dynamic> item) {
     showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -57,28 +61,30 @@ class InventoryPage extends StatelessWidget {
     );
   }
 
-  Widget buildBody(AsyncSnapshot<String?> snapshot) {
+  Widget buildBody(AsyncSnapshot<String?> snapshot, BuildContext context) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Center(child: CircularProgressIndicator());
     } else if (snapshot.hasError) {
       return Center(child: Text('Error: ${snapshot.error}'));
     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-      return const Center(child: Text('フォルダが未選択'));
+      return Center(child: Text(S.of(context).NoFolderSelected));
     } else {
       final folderName = snapshot.data!;
       return Obx(() {
         final items = _inventoryController.items;
         if (items.isEmpty) {
-          return const Center(child: Text('フォルダ内にアイテムが存在しません'));
+          return Center(child: Text(S.of(context).NoFolderInItem));
         } else {
           return ListView.builder(
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
               return InkWell(
-                onLongPress: () => _showEditItemDialog(context, folderName, item),
+                onLongPress: () =>
+                    _showEditItemDialog(context, folderName, item),
                 child: Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
@@ -86,16 +92,18 @@ class InventoryPage extends StatelessWidget {
                         SizedBox(
                           width: 60,
                           height: 60,
-                          child: item['image'] != null && item['image'].isNotEmpty
-                              ? Image.memory(
-                            Uint8List.fromList(List<int>.from(item['image'])),
-                            fit: BoxFit.cover,
-                          )
-                              : const Icon(
-                            Icons.image_not_supported,
-                            size: 40,
-                            color: Colors.grey,
-                          ),
+                          child:
+                              item['image'] != null && item['image'].isNotEmpty
+                                  ? Image.memory(
+                                      Uint8List.fromList(
+                                          List<int>.from(item['image'])),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : const Icon(
+                                      Icons.image_not_supported,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -104,10 +112,12 @@ class InventoryPage extends StatelessWidget {
                             children: [
                               Text(
                                 item['name'] as String,
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 4),
-                              Obx(() => Text('在庫: ${item['stock'] ?? 0}')),
+                              Obx(() => Text(
+                                  '${S.of(context).stuck}: ${item['stock'] ?? 0}')),
                             ],
                           ),
                         ),
@@ -116,19 +126,27 @@ class InventoryPage extends StatelessWidget {
                             IconButton(
                               icon: const Icon(Icons.remove, size: 20),
                               onPressed: () {
-                                final newStock = (item['stock'] as int? ?? 1) - 1;
+                                final newStock =
+                                    (item['stock'] as int? ?? 1) - 1;
                                 if (newStock >= 0) {
-                                  _inventoryController.updateItemStockLocally(item['name'] as String, newStock);
-                                  _inventoryController.updateItemStock(folderName, item['name'] as String, newStock);
+                                  _inventoryController.updateItemStockLocally(
+                                      item['name'] as String, newStock);
+                                  _inventoryController.updateItemStock(
+                                      folderName,
+                                      item['name'] as String,
+                                      newStock);
                                 }
                               },
                             ),
                             IconButton(
                               icon: const Icon(Icons.add, size: 20),
                               onPressed: () {
-                                final newStock = (item['stock'] as int? ?? 1) + 1;
-                                _inventoryController.updateItemStockLocally(item['name'] as String, newStock);
-                                _inventoryController.updateItemStock(folderName, item['name'] as String, newStock);
+                                final newStock =
+                                    (item['stock'] as int? ?? 1) + 1;
+                                _inventoryController.updateItemStockLocally(
+                                    item['name'] as String, newStock);
+                                _inventoryController.updateItemStock(folderName,
+                                    item['name'] as String, newStock);
                               },
                             ),
                           ],
@@ -152,7 +170,8 @@ class AddItemDialog extends StatelessWidget {
   AddItemDialog({required this.folderName, super.key});
 
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController quantityController = TextEditingController(text: '1');
+  final TextEditingController quantityController =
+      TextEditingController(text: '1');
   final CropController cropController = CropController();
 
   final Rxn<Uint8List> croppedImage = Rxn<Uint8List>();
@@ -202,7 +221,7 @@ class AddItemDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('$folderNameにアイテムを追加'),
+      title: Text(S.of(context).addItemMessage(folderName)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -210,20 +229,20 @@ class AddItemDialog extends StatelessWidget {
             TextField(
               controller: nameController,
               autofocus: true,
-              decoration: const InputDecoration(labelText: "アイテム名"),
+              decoration: InputDecoration(labelText: S.of(context).itemName),
             ),
             TextField(
               controller: quantityController,
-              decoration: const InputDecoration(labelText: "在庫数"),
+              decoration: InputDecoration(labelText: S.of(context).stuckNum),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => pickAndCropImage(context),
-              child: const Text('画像選択'),
+              child: Text(S.of(context).imageSelect),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             Obx(() {
               if (croppedImage.value != null) {
                 return Image.memory(
@@ -241,24 +260,20 @@ class AddItemDialog extends StatelessWidget {
       ),
       actions: <Widget>[
         TextButton(
-          child: const Text('Cancel'),
+          child: Text(S.of(context).cancel),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
         TextButton(
-          child: const Text('Add'),
+          child: Text(S.of(context).create),
           onPressed: () async {
             final newItemName = nameController.text;
             final newItemQuantity = int.tryParse(quantityController.text) ?? 1;
 
             if (newItemName.isNotEmpty) {
-              await Get.find<InventoryController>().addItem(
-                folderName,
-                newItemName,
-                newItemQuantity,
-                croppedImage.value,
-              );
+              await Get.find<InventoryController>().addItem(folderName,
+                  newItemName, newItemQuantity, croppedImage.value, context);
               if (!context.mounted) return;
               Navigator.of(context).pop();
             }
@@ -272,12 +287,15 @@ class AddItemDialog extends StatelessWidget {
 class EditItemDialog extends StatelessWidget {
   final String folderName;
   final Map<String, dynamic> item;
-  final InventoryController _inventoryController = Get.find<InventoryController>();
+  final InventoryController _inventoryController =
+      Get.find<InventoryController>();
 
   EditItemDialog({required this.folderName, required this.item, super.key}) {
     _nameController.text = item['name'] as String;
     _quantityController.text = (item['stock'] ?? 0).toString();
-    _itemImage.value = item['image'] != null && item['image'] is List<int> && item['image'].isNotEmpty
+    _itemImage.value = item['image'] != null &&
+            item['image'] is List<int> &&
+            item['image'].isNotEmpty
         ? Uint8List.fromList(List<int>.from(item['image']))
         : null;
   }
@@ -341,20 +359,20 @@ class EditItemDialog extends StatelessWidget {
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: "アイテム名"),
+              decoration: InputDecoration(labelText: S.of(context).itemName),
             ),
             TextField(
               controller: _quantityController,
-              decoration: const InputDecoration(labelText: "在庫数"),
+              decoration: InputDecoration(labelText: S.of(context).stuckNum),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => _pickAndCropImage(context),
-              child: const Text('画像変更'),
+              child: Text(S.of(context).imageChange),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             Obx(() {
               if (_itemImage.value != null) {
                 return Image.memory(
@@ -372,15 +390,15 @@ class EditItemDialog extends StatelessWidget {
       ),
       actions: <Widget>[
         TextButton(
-          child: const Text('Cancel'),
+          child: Text(S.of(context).cancel),
           onPressed: () => Navigator.of(context).pop(),
         ),
         TextButton(
-          child: const Text('Delete'),
+          child: Text(S.of(context).delete),
           onPressed: () => _showDeleteConfirmation(context),
         ),
         TextButton(
-          child: const Text('Save'),
+          child: Text(S.of(context).save),
           onPressed: () => _saveChanges(context),
         ),
       ],
@@ -392,15 +410,15 @@ class EditItemDialog extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('削除'),
-          content: const Text('このアイテムを削除しますか？'),
+          title: Text(S.of(context).delete),
+          content: Text(S.of(context).deleteCheck),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(S.of(context).cancel),
               onPressed: () => Navigator.of(context).pop(false),
             ),
             TextButton(
-              child: const Text('Delete'),
+              child: Text(S.of(context).delete),
               onPressed: () => Navigator.of(context).pop(true),
             ),
           ],
@@ -408,7 +426,8 @@ class EditItemDialog extends StatelessWidget {
       },
     ).then((confirmed) {
       if (confirmed == true) {
-        _inventoryController.deleteItem(folderName, item['name'] as String);
+        _inventoryController.deleteItem(
+            folderName, item['name'] as String, context);
         Navigator.of(context).pop(); // Close edit dialog
       }
     });
@@ -416,7 +435,8 @@ class EditItemDialog extends StatelessWidget {
 
   void _saveChanges(BuildContext context) {
     final newName = _nameController.text;
-    final newQuantity = int.tryParse(_quantityController.text) ?? item['stock'] as int;
+    final newQuantity =
+        int.tryParse(_quantityController.text) ?? item['stock'] as int;
 
     Map<String, dynamic> updatedItem = Map.from(item);
     updatedItem['name'] = newName;
@@ -425,10 +445,11 @@ class EditItemDialog extends StatelessWidget {
       updatedItem['image'] = _itemImage.value!.toList();
     }
 
-    _inventoryController.updateItem(folderName, item, updatedItem).then((_) {
+    _inventoryController
+        .updateItem(folderName, item, updatedItem, context)
+        .then((_) {
       _inventoryController.items.refresh();
       Navigator.of(context).pop();
     });
   }
-
 }
