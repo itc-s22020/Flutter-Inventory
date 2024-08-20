@@ -28,20 +28,20 @@ class FolderPage extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Create New Folder'),
+              title: const Text('フォルダ作成'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
                       autofocus: true,
-                      decoration: const InputDecoration(hintText: "Enter folder name"),
+                      decoration: const InputDecoration(hintText: "フォルダ名を入力"),
                       onChanged: (value) {
                         newCategory = value;
                       },
                     ),
                     const SizedBox(height: 20),
-                    const Text('Select an icon:'),
+                    const Text('アイコン:'),
                     const SizedBox(height: 10),
                     Wrap(
                       spacing: 10,
@@ -129,17 +129,17 @@ class FolderPage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Options for $folderName'),
+          title: Text(folderName),
           actions: <Widget>[
             TextButton(
-              child: const Text('Rename'),
+              child: const Text('rename'),
               onPressed: () {
                 Navigator.of(context).pop();
                 _showRenameFolderDialog(context, folderName);
               },
             ),
             TextButton(
-              child: const Text('Delete'),
+              child: const Text('delete'),
               onPressed: () {
                 Navigator.of(context).pop();
                 _deleteCategory(context, folderName);
@@ -167,7 +167,7 @@ class FolderPage extends StatelessWidget {
           title: const Text('Rename Folder'),
           content: TextField(
             autofocus: true,
-            decoration: const InputDecoration(hintText: "Enter new folder name"),
+            decoration: const InputDecoration(hintText: "新しいフォルダ名を入力"),
             onChanged: (value) {
               newName = value;
             },
@@ -257,7 +257,7 @@ class FolderPage extends StatelessWidget {
               } else if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No folders found'));
+                return const Center(child: Text('フォルダが存在しません'));
               } else {
                 return ListView.builder(
                   itemCount: snapshot.data!.length,

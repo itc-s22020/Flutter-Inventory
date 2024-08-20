@@ -90,7 +90,7 @@ class InventoryController extends GetxController {
         }
       }
 
-      showSnackBar('Item renamed from $oldName to $newName');
+      showSnackBar('アイテム名を $oldName から $newName に変更');
       return true;
     } catch (e) {
       if (kDebugMode) {
@@ -120,7 +120,7 @@ class InventoryController extends GetxController {
           }
         }
 
-        showSnackBar('Image updated for $name');
+        showSnackBar('$name の画像を変更');
         return true;
       } else {
         showSnackBar('Error optimizing image', isError: true);
@@ -145,7 +145,7 @@ class InventoryController extends GetxController {
         _itemCache[folderName]!.removeWhere((item) => item['name'] == name);
       }
 
-      showSnackBar('$name deleted from $folderName');
+      showSnackBar('$folderName から $name を削除');
       return true;
     } catch (e) {
       if (kDebugMode) {
@@ -194,7 +194,7 @@ class InventoryController extends GetxController {
 
       items.add(RxMap<String, dynamic>.from(newItem));
 
-      showSnackBar('$name added to $folderName');
+      showSnackBar('$folderName に $name を作成');
       return true;
     } catch (e) {
       if (kDebugMode) {
@@ -217,7 +217,6 @@ class InventoryController extends GetxController {
         }
       }
       await loadItems(folderName);
-      showSnackBar('All images have been optimized');
     } catch (e) {
       if (kDebugMode) {
         print('Error optimizing existing images: $e');
@@ -228,7 +227,7 @@ class InventoryController extends GetxController {
 
   void showSnackBar(String message, {bool isError = false}) {
     CustomSnackBar.show(
-      title: 'Inventory Update',
+      title: isError ? 'エラー' : '成功',
       message: message,
       isError: isError,
     );

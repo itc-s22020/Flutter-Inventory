@@ -63,13 +63,13 @@ class InventoryPage extends StatelessWidget {
     } else if (snapshot.hasError) {
       return Center(child: Text('Error: ${snapshot.error}'));
     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-      return const Center(child: Text('No folder found'));
+      return const Center(child: Text('フォルダが未選択'));
     } else {
       final folderName = snapshot.data!;
       return Obx(() {
         final items = _inventoryController.items;
         if (items.isEmpty) {
-          return const Center(child: Text('No items in this folder'));
+          return const Center(child: Text('フォルダ内にアイテムが存在しません'));
         } else {
           return ListView.builder(
             itemCount: items.length,
@@ -202,7 +202,7 @@ class AddItemDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Add Item to $folderName'),
+      title: Text('$folderNameにアイテムを追加'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -210,18 +210,18 @@ class AddItemDialog extends StatelessWidget {
             TextField(
               controller: nameController,
               autofocus: true,
-              decoration: const InputDecoration(labelText: "Item name"),
+              decoration: const InputDecoration(labelText: "アイテム名"),
             ),
             TextField(
               controller: quantityController,
-              decoration: const InputDecoration(labelText: "Quantity"),
+              decoration: const InputDecoration(labelText: "在庫数"),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => pickAndCropImage(context),
-              child: const Text('Select and Crop Image'),
+              child: const Text('画像選択'),
             ),
             const SizedBox(height: 20),
             Obx(() {
@@ -334,25 +334,25 @@ class EditItemDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Edit ${item['name']}'),
+      title: Text('${item['name']}'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: "Item name"),
+              decoration: const InputDecoration(labelText: "アイテム名"),
             ),
             TextField(
               controller: _quantityController,
-              decoration: const InputDecoration(labelText: "Quantity"),
+              decoration: const InputDecoration(labelText: "在庫数"),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => _pickAndCropImage(context),
-              child: const Text('Change Image'),
+              child: const Text('画像変更'),
             ),
             const SizedBox(height: 20),
             Obx(() {
@@ -392,8 +392,8 @@ class EditItemDialog extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Deletion'),
-          content: const Text('Are you sure you want to delete this item?'),
+          title: const Text('削除'),
+          content: const Text('このアイテムを削除しますか？'),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancel'),
