@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:inventory/ui/version.dart';
 
 import '../generated/l10n.dart';
 import '../pref/folder_view.dart';
@@ -131,6 +132,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 12),
+                  const Version()
                 ],
               ),
               actions: <Widget>[
