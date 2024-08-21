@@ -23,6 +23,7 @@ class InventoryPage extends StatelessWidget {
         final folderName = snapshot.data ?? '';
         if (snapshot.hasData && folderName.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            _inventoryController.items.clear();
             _inventoryController.loadItems(folderName);
           });
         }
@@ -70,96 +71,91 @@ class InventoryPage extends StatelessWidget {
       return Center(child: Text(S.of(context).NoFolderSelected));
     } else {
       final folderName = snapshot.data!;
-      return Obx(() {
-        final items = _inventoryController.items;
-        if (items.isEmpty) {
-          return Center(child: Text(S.of(context).NoFolderInItem));
-        } else {
-          return ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return InkWell(
-                onLongPress: () =>
-                    _showEditItemDialog(context, folderName, item),
-                child: Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 60,
-                          height: 60,
-                          child:
-                              item['image'] != null && item['image'].isNotEmpty
-                                  ? Image.memory(
-                                      Uint8List.fromList(
-                                          List<int>.from(item['image'])),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : const Icon(
-                                      Icons.image_not_supported,
-                                      size: 40,
-                                      color: Colors.grey,
-                                    ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+      return FutureBuilder<void>(
+        future: Future.delayed(const Duration(microseconds: 1)), //NOTE::前回のitemが表示される対策として実装　delayedを使用することでsnapshotのデータを破棄する？
+        builder: (context, delaySnapshot) {
+          if (delaySnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            return Obx(() {
+              final items = _inventoryController.items;
+              if (items.isEmpty) {
+                return Center(child: Text(S.of(context).NoFolderInItem));
+              } else {
+                return ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    return InkWell(
+                      onLongPress: () => _showEditItemDialog(context, folderName, item),
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
                             children: [
-                              Text(
-                                item['name'] as String,
-                                style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              SizedBox(
+                                width: 60,
+                                height: 60,
+                                child: item['image'] != null && item['image'].isNotEmpty
+                                    ? Image.memory(
+                                  Uint8List.fromList(List<int>.from(item['image'])),
+                                  fit: BoxFit.cover,
+                                )
+                                    : const Icon(
+                                  Icons.image_not_supported,
+                                  size: 40,
+                                  color: Colors.grey,
+                                ),
                               ),
-                              const SizedBox(height: 4),
-                              Obx(() => Text(
-                                  '${S.of(context).stuck}: ${item['stock'] ?? 0}')),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item['name'] as String,
+                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Obx(() => Text('${S.of(context).stuck}: ${item['stock'] ?? 0}')),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.remove, size: 20),
+                                    onPressed: () {
+                                      final newStock = (item['stock'] as int? ?? 1) - 1;
+                                      if (newStock >= 0) {
+                                        _inventoryController.updateItemStockLocally(item['name'] as String, newStock);
+                                        _inventoryController.updateItemStock(folderName, item['name'] as String, newStock);
+                                      }
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.add, size: 20),
+                                    onPressed: () {
+                                      final newStock = (item['stock'] as int? ?? 1) + 1;
+                                      _inventoryController.updateItemStockLocally(item['name'] as String, newStock);
+                                      _inventoryController.updateItemStock(folderName, item['name'] as String, newStock);
+                                    },
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.remove, size: 20),
-                              onPressed: () {
-                                final newStock =
-                                    (item['stock'] as int? ?? 1) - 1;
-                                if (newStock >= 0) {
-                                  _inventoryController.updateItemStockLocally(
-                                      item['name'] as String, newStock);
-                                  _inventoryController.updateItemStock(
-                                      folderName,
-                                      item['name'] as String,
-                                      newStock);
-                                }
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.add, size: 20),
-                              onPressed: () {
-                                final newStock =
-                                    (item['stock'] as int? ?? 1) + 1;
-                                _inventoryController.updateItemStockLocally(
-                                    item['name'] as String, newStock);
-                                _inventoryController.updateItemStock(folderName,
-                                    item['name'] as String, newStock);
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        }
-      });
+                      ),
+                    );
+                  },
+                );
+              }
+            });
+          }
+        },
+      );
     }
   }
 }

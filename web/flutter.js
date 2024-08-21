@@ -1,4 +1,4 @@
-const CACHE_NAME = 'app-cache-v0.1.6';
+const CACHE_NAME = 'app-cache-v0.1.7';
 const cacheWhitelist = [CACHE_NAME];
 
 self.addEventListener('install', (event) => {
