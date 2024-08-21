@@ -1,4 +1,4 @@
-const CACHE_NAME = 'app-cache-v0.1.2';
+const CACHE_NAME = 'app-cache-v0.1.3';
 const cacheWhitelist = [CACHE_NAME];
 
 self.addEventListener('activate', (event) => {
