@@ -428,7 +428,7 @@ class EditItemDialog extends StatelessWidget {
       if (confirmed == true) {
         _inventoryController.deleteItem(
             folderName, item['name'] as String, context);
-        Navigator.of(context).pop(); // Close edit dialog
+        Navigator.of(context).pop();
       }
     });
   }

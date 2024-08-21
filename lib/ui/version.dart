@@ -4,9 +4,12 @@ class Version extends StatelessWidget {
   const Version({super.key});
   @override
   Widget build(BuildContext context) {
-    const version = "0.1.1";
+
+    const version = "0.1.2";
+    const date = "2024/08/21";
+
     return const Text(
-      "Version-$version@2024/08/20",
+      "Version-$version@$date",
       style: TextStyle(
         fontWeight: FontWeight.bold,
         color: Colors.grey

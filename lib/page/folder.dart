@@ -31,7 +31,7 @@ class FolderPage extends StatelessWidget {
   FolderPage({super.key});
 
   Future<void> _showAddFolderDialog(BuildContext context) async {
-    String newCategory = '';
+    String newFolder = '';
     IconData selectedIcon = _icons.first;
 
     return showDialog<void>(
@@ -50,7 +50,7 @@ class FolderPage extends StatelessWidget {
                       decoration: InputDecoration(
                           hintText: S.of(context).folderNameField),
                       onChanged: (value) {
-                        newCategory = value;
+                        newFolder = value;
                       },
                     ),
                     const SizedBox(height: 20),
@@ -92,8 +92,8 @@ class FolderPage extends StatelessWidget {
                 TextButton(
                   child: Text(S.of(context).create),
                   onPressed: () {
-                    if (newCategory.isNotEmpty) {
-                      _addFolder(context, newCategory, selectedIcon);
+                    if (newFolder.isNotEmpty) {
+                      _addFolder(context, newFolder, selectedIcon);
                     }
                   },
                 ),
@@ -108,11 +108,11 @@ class FolderPage extends StatelessWidget {
   Future<void> _addFolder(
       BuildContext context, String folder, IconData icon) async {
     try {
-      final existingCategories = await _inventoryService.getAllCategories();
-      final categoryNames =
-          existingCategories.map((cat) => cat['name'] as String).toList();
+      final existingFolder = await _inventoryService.getAllFolder();
+      final folderNames =
+          existingFolder.map((cat) => cat['name'] as String).toList();
 
-      if (categoryNames.contains(folder)) {
+      if (folderNames.contains(folder)) {
         if (!context.mounted) return;
         CustomSnackBar.show(
           title: S.of(context).error,
@@ -124,7 +124,7 @@ class FolderPage extends StatelessWidget {
       }
 
       int iconIndex = _icons.indexOf(icon);
-      await _inventoryService.addCategory(folder, iconIndex);
+      await _inventoryService.addFolder(folder, iconIndex);
       if (!context.mounted) return;
       CustomSnackBar.show(
         title: S.of(context).success,
@@ -158,7 +158,7 @@ class FolderPage extends StatelessWidget {
               },
             ),
             TextButton(
-              child: Text(S.of(context).rename),
+              child: Text(S.of(context).delete),
               onPressed: () {
                 Navigator.of(context).pop();
                 _deleteFolder(context, folderName);
@@ -217,12 +217,12 @@ class FolderPage extends StatelessWidget {
   Future<void> _renameFolder(
       BuildContext context, String oldName, String newName) async {
     try {
-      final existingCategories = await _inventoryService.getAllCategories();
-      final categoryNames =
-          existingCategories.map((cat) => cat['name'] as String).toList();
+      final existingFolder = await _inventoryService.getAllFolder();
+      final folderNames =
+          existingFolder.map((cat) => cat['name'] as String).toList();
 
       if (!context.mounted) return;
-      if (categoryNames.contains(newName)) {
+      if (folderNames.contains(newName)) {
         CustomSnackBar.show(
           title: S.of(context).error,
           message: S.of(context).errorDuplicationFolder(newName),
@@ -232,7 +232,7 @@ class FolderPage extends StatelessWidget {
       }
 
       await saveLastUsedFolder(newName);
-      await _inventoryService.renameCategory(oldName, newName);
+      await _inventoryService.renameFolder(oldName, newName);
       if (!context.mounted) return;
       CustomSnackBar.show(
         title: S.of(context).success,
@@ -250,7 +250,7 @@ class FolderPage extends StatelessWidget {
 
   Future<void> _deleteFolder(BuildContext context, String folderName) async {
     try {
-      await _inventoryService.deleteCategory(folderName);
+      await _inventoryService.deleteFolder(folderName);
       await saveLastUsedFolder('');
       if (!context.mounted) return;
       CustomSnackBar.show(
@@ -275,7 +275,7 @@ class FolderPage extends StatelessWidget {
         valueListenable: _notifier,
         builder: (context, value, child) {
           return FutureBuilder<List<Map<String, dynamic>>>(
-            future: _inventoryService.getAllCategories(),
+            future: _inventoryService.getAllFolder(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -287,17 +287,17 @@ class FolderPage extends StatelessWidget {
                 return ListView.builder(
                   itemCount: snapshot.data!.length,
                   itemBuilder: (context, index) {
-                    final category = snapshot.data![index];
+                    final folder = snapshot.data![index];
                     return ListTile(
-                      leading: Icon(_icons[category['iconIndex'] as int]),
-                      title: Text(category['name'] as String),
+                      leading: Icon(_icons[folder['iconIndex'] as int]),
+                      title: Text(folder['name'] as String),
                       onTap: () {
                         toInventory();
-                        saveLastUsedFolder(category['name'] as String);
+                        saveLastUsedFolder(folder['name'] as String);
                       },
                       onLongPress: () {
                         _showFolderOptionsDialog(
-                            context, category['name'] as String);
+                            context, folder['name'] as String);
                       },
                     );
                   },

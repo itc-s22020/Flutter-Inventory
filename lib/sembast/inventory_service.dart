@@ -6,13 +6,13 @@ class InventoryService {
   final _db = DatabaseService().db;
   final _store = stringMapStoreFactory.store('inventory');
 
-  Future<void> addCategory(String category, int iconIndex) async {
-    final record = _store.record(category);
+  Future<void> addFolder(String folder, int iconIndex) async {
+    final record = _store.record(folder);
     await _db.transaction((txn) async {
       final snapshot = await record.get(txn);
       if (snapshot == null) {
         await record.put(txn, {
-          'category': category,
+          'folder': folder,
           'iconIndex': iconIndex,
           'items': [],
         });
@@ -20,8 +20,8 @@ class InventoryService {
     });
   }
 
-  Future<Map<String, dynamic>> addItem(String category, String name, Uint8List? image, int iconIndex, int stock) async {
-    final record = _store.record(category);
+  Future<Map<String, dynamic>> addItem(String folder, String name, Uint8List? image, int iconIndex, int stock) async {
+    final record = _store.record(folder);
     final newItem = {
       'name': name,
       'image': image ?? '',
@@ -32,7 +32,7 @@ class InventoryService {
       final snapshot = await record.get(txn);
       if (snapshot == null) {
         await record.put(txn, {
-          'category': category,
+          'folder': folder,
           'iconIndex': iconIndex,
           'items': [newItem],
         });
@@ -49,8 +49,8 @@ class InventoryService {
     return newItem;
   }
 
-  Future<List<Map<String, dynamic>>> getItems(String category) async {
-    final record = _store.record(category);
+  Future<List<Map<String, dynamic>>> getItems(String folder) async {
+    final record = _store.record(folder);
     final snapshot = await record.get(_db);
     if (snapshot == null) {
       return [];
@@ -61,8 +61,8 @@ class InventoryService {
     }
   }
 
-  Future<void> renameItem(String category, String oldName, String newName) async {
-    final record = _store.record(category);
+  Future<void> renameItem(String folder, String oldName, String newName) async {
+    final record = _store.record(folder);
     await _db.transaction((txn) async {
       final snapshot = await record.get(txn);
       if (snapshot != null) {
@@ -82,8 +82,8 @@ class InventoryService {
     });
   }
 
-  Future<void> updateItemStock(String category, String itemName, int newStock) async {
-    final record = _store.record(category);
+  Future<void> updateItemStock(String folder, String itemName, int newStock) async {
+    final record = _store.record(folder);
     await _db.transaction((txn) async {
       final snapshot = await record.get(txn);
       if (snapshot != null) {
@@ -103,8 +103,8 @@ class InventoryService {
     });
   }
 
-  Future<void> deleteItem(String category, String itemName) async {
-    final record = _store.record(category);
+  Future<void> deleteItem(String folder, String itemName) async {
+    final record = _store.record(folder);
     await _db.transaction((txn) async {
       final snapshot = await record.get(txn);
       if (snapshot != null) {
@@ -119,8 +119,8 @@ class InventoryService {
     });
   }
 
-  Future<void> updateItemImage(String category, String itemName, Uint8List newImage) async {
-    final record = _store.record(category);
+  Future<void> updateItemImage(String folder, String itemName, Uint8List newImage) async {
+    final record = _store.record(folder);
     await _db.transaction((txn) async {
       final snapshot = await record.get(txn);
       if (snapshot != null) {
@@ -140,18 +140,18 @@ class InventoryService {
     });
   }
 
-  Future<List<Map<String, dynamic>>> getAllCategories() async {
+  Future<List<Map<String, dynamic>>> getAllFolder() async {
     final snapshots = await _store.find(_db);
     return snapshots.map((snapshot) {
       final value = snapshot.value as Map<String, dynamic>;
       return {
-        'name': value['category'] as String,
+        'name': value['folder'] as String,
         'iconIndex': value['iconIndex'] as int,
       };
     }).toList();
   }
 
-  Future<void> renameCategory(String oldName, String newName) async {
+  Future<void> renameFolder(String oldName, String newName) async {
     await _db.transaction((txn) async {
       final oldRecord = _store.record(oldName);
       final newRecord = _store.record(newName);
@@ -160,15 +160,15 @@ class InventoryService {
       if (oldData != null) {
         await newRecord.put(txn, {
           ...oldData as Map<String, dynamic>,
-          'category': newName,
+          'folder': newName,
         });
         await oldRecord.delete(txn);
       }
     });
   }
 
-  Future<void> deleteCategory(String category) async {
-    final record = _store.record(category);
+  Future<void> deleteFolder(String folder) async {
+    final record = _store.record(folder);
     await record.delete(_db);
   }
 }
