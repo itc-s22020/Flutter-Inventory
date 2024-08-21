@@ -34,18 +34,19 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
       centerTitle: true,
       leadingWidth: 56,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 4.0),
-        child: ValueListenableBuilder<IconData>(
-          valueListenable: _viewIconNotifier,
-          builder: (context, icon, child) {
-            return _buildIconButton(
-              icon: icon,
-              onTap: () => _changeViewStyle(page),
-            );
-          },
-        ),
-      ),
+      // ::TODO 未実装なので一時的に非表示
+      // leading: Padding(
+      //   padding: const EdgeInsets.only(left: 4.0),
+      //   child: ValueListenableBuilder<IconData>(
+      //     valueListenable: _viewIconNotifier,
+      //     builder: (context, icon, child) {
+      //       return _buildIconButton(
+      //         icon: icon,
+      //         onTap: () => _changeViewStyle(page),
+      //       );
+      //     },
+      //   ),
+      // ),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 4.0),
