@@ -167,6 +167,18 @@ class InventoryService {
     });
   }
 
+  Future<int> getItemCount(String folder) async {
+    final record = _store.record(folder);
+    final snapshot = await record.get(_db);
+    if (snapshot == null) {
+      return 0;
+    } else {
+      final value = snapshot as Map<String, dynamic>;
+      final items = (value['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      return items.length;
+    }
+  }
+
   Future<void> deleteFolder(String folder) async {
     final record = _store.record(folder);
     await record.delete(_db);

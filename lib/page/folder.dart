@@ -288,17 +288,65 @@ class FolderPage extends StatelessWidget {
                   itemCount: snapshot.data!.length,
                   itemBuilder: (context, index) {
                     final folder = snapshot.data![index];
-                    return ListTile(
-                      leading: Icon(_icons[folder['iconIndex'] as int]),
-                      title: Text(folder['name'] as String),
+                    return InkWell(
                       onTap: () {
                         toInventory();
                         saveLastUsedFolder(folder['name'] as String);
                       },
                       onLongPress: () {
-                        _showFolderOptionsDialog(
-                            context, folder['name'] as String);
+                        _showFolderOptionsDialog(context, folder['name'] as String);
                       },
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 60,
+                                height: 60,
+                                child: Icon(
+                                  _icons[folder['iconIndex'] as int],
+                                  size: 40,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      folder['name'] as String,
+                                      style: const TextStyle(
+                                          fontSize: 16, fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    FutureBuilder<int>(
+                                      future: _inventoryService.getItemCount(folder['name'] as String),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                          return const Text('Loading...');
+                                        } else if (snapshot.hasError) {
+                                          return const Text('Error');
+                                        } else {
+                                          return Row(
+                                              children: [
+                                                const Icon(Icons.layers, color: Colors.grey, size: 20,),
+                                                Text(' ${snapshot.data ?? 0}', style: TextStyle(color: Colors.grey[600]),)
+                                              ]
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.chevron_right, color: Colors.grey[400]),
+                            ],
+                          ),
+                        ),
+                      ),
                     );
                   },
                 );
