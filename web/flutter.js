@@ -1,5 +1,9 @@
-const CACHE_NAME = 'app-cache-v0.1.5';
+const CACHE_NAME = 'app-cache-v0.1.6';
 const cacheWhitelist = [CACHE_NAME];
+
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
@@ -11,19 +15,21 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
+    }).then(() => {
+      return self.clients.claim();
     })
   );
 });
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return fetch(event.request).then((response) => {
+    fetch(event.request).then((response) => {
+      return caches.open(CACHE_NAME).then((cache) => {
         cache.put(event.request, response.clone());
         return response;
-      }).catch(() => {
-        return caches.match(event.request);
       });
+    }).catch(() => {
+      return caches.match(event.request);
     })
   );
 });
