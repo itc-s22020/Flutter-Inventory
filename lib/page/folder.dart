@@ -12,20 +12,10 @@ class FolderPage extends StatelessWidget {
   final ValueNotifier<int> _notifier = ValueNotifier<int>(0);
 
   final List<IconData> _icons = [
-    Icons.folder,
-    Icons.work,
-    Icons.home,
-    Icons.school,
-    Icons.favorite,
-    Icons.music_note,
-    Icons.sports_soccer,
-    Icons.star,
-    Icons.local_dining,
-    Icons.shopping_cart,
-    Icons.book,
-    Icons.science,
-    Icons.water_drop,
-    Icons.pentagon
+    Icons.folder, Icons.work, Icons.home, Icons.school,
+    Icons.favorite, Icons.music_note, Icons.sports_soccer, Icons.star,
+    Icons.local_dining, Icons.shopping_cart, Icons.book,
+    Icons.science, Icons.water_drop, Icons.pentagon
   ];
 
   FolderPage({super.key});
@@ -176,8 +166,7 @@ class FolderPage extends StatelessWidget {
     );
   }
 
-  Future<void> _showRenameFolderDialog(
-      BuildContext context, String oldName) async {
+  Future<void> _showRenameFolderDialog(BuildContext context, String oldName) async {
     String newName = '';
 
     return showDialog<void>(
@@ -284,72 +273,7 @@ class FolderPage extends StatelessWidget {
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return Center(child: Text(S.of(context).NoFolderFound));
               } else {
-                return ListView.builder(
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    final folder = snapshot.data![index];
-                    return InkWell(
-                      onTap: () {
-                        toInventory();
-                        saveLastUsedFolder(folder['name'] as String);
-                      },
-                      onLongPress: () {
-                        _showFolderOptionsDialog(context, folder['name'] as String);
-                      },
-                      child: Card(
-                        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 60,
-                                height: 60,
-                                child: Icon(
-                                  _icons[folder['iconIndex'] as int],
-                                  size: 40,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      folder['name'] as String,
-                                      style: const TextStyle(
-                                          fontSize: 16, fontWeight: FontWeight.bold),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    FutureBuilder<int>(
-                                      future: _inventoryService.getItemCount(folder['name'] as String),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                          return const Text('Loading...');
-                                        } else if (snapshot.hasError) {
-                                          return const Text('Error');
-                                        } else {
-                                          return Row(
-                                              children: [
-                                                const Icon(Icons.layers, color: Colors.grey, size: 20,),
-                                                Text(' ${snapshot.data ?? 0}', style: TextStyle(color: Colors.grey[600]),)
-                                              ]
-                                          );
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(Icons.chevron_right, color: Colors.grey[400]),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
+                return _buildListView(snapshot);
               }
             },
           );
@@ -360,6 +284,75 @@ class FolderPage extends StatelessWidget {
         heroTag: 'folder',
         child: const Icon(Icons.create_new_folder),
       ),
+    );
+  }
+
+  Widget _buildListView(snapshot) {
+    return ListView.builder(
+      itemCount: snapshot.data!.length,
+      itemBuilder: (context, index) {
+        final folder = snapshot.data![index];
+        return InkWell(
+          onTap: () {
+            toInventory();
+            saveLastUsedFolder(folder['name'] as String);
+          },
+          onLongPress: () {
+            _showFolderOptionsDialog(context, folder['name'] as String);
+          },
+          child: Card(
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: Icon(
+                      _icons[folder['iconIndex'] as int],
+                      size: 40,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          folder['name'] as String,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        FutureBuilder<int>(
+                          future: _inventoryService.getItemCount(folder['name'] as String),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const Text('Loading...');
+                            } else if (snapshot.hasError) {
+                              return const Text('Error');
+                            } else {
+                              return Row(
+                                  children: [
+                                    const Icon(Icons.layers, color: Colors.grey, size: 20,),
+                                    Text(' ${snapshot.data ?? 0}', style: TextStyle(color: Colors.grey[600]),)
+                                  ]
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: Colors.grey[400]),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
