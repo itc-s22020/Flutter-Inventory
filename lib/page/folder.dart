@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../generated/l10n.dart';
 import '../getx/folder_controller.dart';
 import '../getx/navigation.dart';
+import '../getx/view_controller.dart';
 import '../pref/last_used_folder.dart';
 import '../ui/custom_app_bar.dart';
 import '../ui/dialog/add_folder_dialog.dart';
@@ -10,6 +11,7 @@ import '../ui/dialog/folder_options_dialog.dart';
 
 class FolderPage extends StatelessWidget {
   final FolderController folderController = Get.put(FolderController());
+  final ViewController viewController = Get.put(ViewController());
   final List<IconData> _icons = [
     Icons.folder,
     Icons.work,
@@ -61,7 +63,10 @@ class FolderPage extends StatelessWidget {
         if (folderController.folders.isEmpty) {
           return Center(child: Text(S.of(context).NoFolderFound));
         } else {
-          return _buildListView(folderController);
+          final viewType = viewController.folderViewType.value;
+          return viewType == 'list'
+              ? _buildListView(folderController)
+              : _buildGridView(folderController);
         }
       }),
       floatingActionButton: FloatingActionButton(
@@ -72,21 +77,26 @@ class FolderPage extends StatelessWidget {
     );
   }
 
+
   Widget _buildListView(FolderController folderController) {
     return ListView.builder(
       itemCount: folderController.folders.length,
       itemBuilder: (context, index) {
         final folder = folderController.folders[index];
-        return InkWell(
-          onTap: () {
-            toInventory();
-            saveLastUsedFolder(folder['name'] as String);
-          },
-          onLongPress: () {
-            _showFolderOptionsDialog(context, folder['name'] as String);
-          },
-          child: Card(
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: InkWell(
+            onTap: () {
+              toInventory();
+              saveLastUsedFolder(folder['name'] as String);
+            },
+            onLongPress: () {
+              _showFolderOptionsDialog(context, folder['name'] as String);
+            },
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
@@ -111,36 +121,85 @@ class FolderPage extends StatelessWidget {
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 4),
-                        FutureBuilder<int>(
-                          future: folderController
-                              .getItemCount(folder['name'] as String),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Text('');
-                            } else if (snapshot.hasError) {
-                              return const Text('Error');
-                            } else {
-                              return Row(children: [
-                                const Icon(
-                                  Icons.layers,
-                                  color: Colors.grey,
-                                  size: 20,
-                                ),
-                                Text(
-                                  ' ${snapshot.data ?? 0}',
-                                  style: TextStyle(color: Colors.grey[600]),
-                                )
-                              ]);
-                            }
-                          },
-                        ),
+                        Obx(() => Row(children: [
+                          const Icon(
+                            Icons.layers,
+                            color: Colors.grey,
+                            size: 20,
+                          ),
+                          Text(
+                            ' ${folderController.folderItemCounts[folder['name'] as String]?.value ?? 0}',
+                            style: TextStyle(color: Colors.grey[600]),
+                          )
+                        ])),
                       ],
                     ),
                   ),
                   Icon(Icons.chevron_right, color: Colors.grey[400]),
                 ],
               ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGridView(FolderController folderController) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 1,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemCount: folderController.folders.length,
+      itemBuilder: (context, index) {
+        final folder = folderController.folders[index];
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: InkWell(
+            onTap: () {
+              toInventory();
+              saveLastUsedFolder(folder['name'] as String);
+            },
+            onLongPress: () {
+              _showFolderOptionsDialog(context, folder['name'] as String);
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _icons[folder['iconIndex'] as int],
+                  size: 50,
+                  color: Colors.blue,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  folder['name'] as String,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Obx(() => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.layers,
+                      color: Colors.grey,
+                      size: 16,
+                    ),
+                    Text(
+                      ' ${folderController.folderItemCounts[folder['name'] as String]?.value ?? 0}',
+                      style: TextStyle(color: Colors.grey[600]),
+                    )
+                  ],
+                )),
+              ],
             ),
           ),
         );

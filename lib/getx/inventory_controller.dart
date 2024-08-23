@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:image/image.dart' as img;
+import 'package:inventory/getx/folder_controller.dart';
 
 import '../generated/l10n.dart';
 import '../sembast/inventory_service.dart';
@@ -220,6 +221,8 @@ class InventoryController extends GetxController {
       }
 
       items.add(RxMap<String, dynamic>.from(newItem));
+      final FolderController folderController = Get.put(FolderController());
+      await folderController.updateFolderCount(folderName);
 
       if (!context.mounted) return false;
       showSnackBar(S.of(context).successMakeItem(name, folderName), context);

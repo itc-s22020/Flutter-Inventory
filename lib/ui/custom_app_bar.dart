@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:inventory/ui/dialog/setting_dialog.dart';
 
+import '../getx/view_controller.dart';
 import '../pref/folder_view.dart';
 import '../pref/inventory_view.dart';
 import '../pref/setting.dart';
@@ -9,6 +11,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final int page;
   final ValueNotifier<IconData> _viewIconNotifier;
+  final ViewController viewController = Get.put(ViewController());
 
   CustomAppBar({super.key, required this.title, required this.page})
       : _viewIconNotifier = ValueNotifier(Icons.view_list_rounded) {
@@ -88,10 +91,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Future<void> _changeViewStyle(int page) async {
-    (page == 0)
-        ? saveFolderView(await getFolderView() == 'list' ? 'grid' : 'list')
-        : saveInventoryView(
-            await getInventoryView() == 'list' ? 'grid' : 'list');
-    _updateViewIcon();
+    await viewController.toggleViewType(page);
+    final currentViewType = viewController.getViewType(page);
+    _viewIconNotifier.value = currentViewType == 'list'
+        ? Icons.view_list_rounded
+        : Icons.grid_view_rounded;
   }
 }

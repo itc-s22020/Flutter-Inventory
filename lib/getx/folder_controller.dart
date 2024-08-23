@@ -8,10 +8,26 @@ import '../ui/custom_snack_bar.dart';
 class FolderController extends GetxController {
   RxList<Map<String, dynamic>> folders = <Map<String, dynamic>>[].obs;
   final InventoryService _inventoryService = InventoryService();
+  final RxMap<String, RxInt> folderItemCounts = <String, RxInt>{}.obs;
 
   Future<void> loadFolders() async {
     final folderList = await _inventoryService.getAllFolder();
     folders.assignAll(folderList);
+    await _updateAllFolderCounts();
+  }
+
+
+  Future<void> _updateAllFolderCounts() async {
+    for (var folder in folders) {
+      String folderName = folder['name'] as String;
+      int count = await _inventoryService.getItemCount(folderName);
+      folderItemCounts[folderName] = count.obs;
+    }
+  }
+
+  Future<void> updateFolderCount(String folderName) async {
+    int count = await _inventoryService.getItemCount(folderName);
+    folderItemCounts[folderName]?.value = count;
   }
 
   Future<void> addFolder(BuildContext context, String folder, int iconIndex,
