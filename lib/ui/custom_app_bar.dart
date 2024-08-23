@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:inventory/ui/version.dart';
+import 'package:inventory/ui/dialog/setting_dialog.dart';
 
-import '../generated/l10n.dart';
 import '../pref/folder_view.dart';
 import '../pref/inventory_view.dart';
 import '../pref/setting.dart';
@@ -22,10 +20,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Future<void> _updateViewIcon() async {
     final currentView =
-        page == 0 ? await getFolderView() : await getInventoryView();
+    page == 0 ? await getFolderView() : await getInventoryView();
     _viewIconNotifier.value = currentView == 'list'
         ? Icons.view_list_rounded
         : Icons.grid_view_rounded;
+  }
+
+  void _showSettingDialog(BuildContext context, currentLanguage, currentSnackBarOnlyError) {
+    showDialog(
+      context: context,
+      builder: (_) => SettingDialog(
+        currentLanguage: currentLanguage,
+        snackBarOnlyError: currentSnackBarOnlyError == 'on',
+      ),
+    );
   }
 
   @override
@@ -51,7 +59,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.only(right: 4.0),
           child: _buildIconButton(
             icon: Icons.settings,
-            onTap: () => _showSettingDialog(context),
+            onTap: () async {
+              String currentLanguage = await getLanguage();
+              String currentSnackBarOnlyError = await getSnackBarOnlyError();
+              if (!context.mounted) return;
+              _showSettingDialog(context, currentLanguage, currentSnackBarOnlyError);
+            },
           ),
         ),
       ],
@@ -80,88 +93,5 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         : saveInventoryView(
             await getInventoryView() == 'list' ? 'grid' : 'list');
     _updateViewIcon();
-  }
-
-  Future<void> _showSettingDialog(BuildContext context) async {
-    String currentLanguage = await getLanguage();
-    String currentSnackBarOnlyError = await getSnackBarOnlyError();
-
-    if (!context.mounted) return;
-    await showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        String selectedLanguage = currentLanguage;
-        bool snackBarOnlyError = currentSnackBarOnlyError == 'on';
-
-        return StatefulBuilder(
-          builder: (BuildContext builderContext, StateSetter setState) {
-            return AlertDialog(
-              title: Text(S.of(builderContext).setting),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<String>(
-                    value: selectedLanguage,
-                    decoration: InputDecoration(
-                        labelText: S.of(builderContext).language),
-                    items: ['English', 'Japanese']
-                        .map<DropdownMenuItem<String>>(
-                            (String value) => DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                ))
-                        .toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedLanguage = newValue ?? currentLanguage;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(S.of(builderContext).errorOnly),
-                      Switch(
-                        value: snackBarOnlyError,
-                        onChanged: (bool value) {
-                          setState(() {
-                            snackBarOnlyError = value;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Version()
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: Text(S.of(context).cancel),
-                  onPressed: () {
-                    Navigator.of(builderContext).pop();
-                  },
-                ),
-                TextButton(
-                  child: Text(S.of(context).save),
-                  onPressed: () async {
-                    await saveLanguage(selectedLanguage);
-                    await saveSnackBarOnlyError(
-                        snackBarOnlyError ? 'on' : 'off');
-                    Locale locale = (selectedLanguage == 'Japanese')
-                        ? const Locale('ja')
-                        : const Locale('en');
-                    Get.updateLocale(locale);
-                    if (!builderContext.mounted) return;
-                    Navigator.of(builderContext).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
   }
 }
