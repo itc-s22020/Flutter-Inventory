@@ -3,11 +3,9 @@ import 'package:get/get.dart';
 import 'package:inventory/page/home.dart';
 import 'package:inventory/pref/setting.dart';
 import 'package:inventory/sembast/database_service.dart';
-import 'package:inventory/sembast/inventory_service.dart';
 import 'generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'getx/folder_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
