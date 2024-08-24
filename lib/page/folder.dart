@@ -77,7 +77,6 @@ class FolderPage extends StatelessWidget {
     );
   }
 
-
   Widget _buildListView(FolderController folderController) {
     return ListView.builder(
       itemCount: folderController.folders.length,
@@ -122,16 +121,16 @@ class FolderPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Obx(() => Row(children: [
-                          const Icon(
-                            Icons.layers,
-                            color: Colors.grey,
-                            size: 20,
-                          ),
-                          Text(
-                            ' ${folderController.folderItemCounts[folder['name'] as String]?.value ?? 0}',
-                            style: TextStyle(color: Colors.grey[600]),
-                          )
-                        ])),
+                              const Icon(
+                                Icons.layers,
+                                color: Colors.grey,
+                                size: 20,
+                              ),
+                              Text(
+                                ' ${folderController.folderItemCounts[folder['name'] as String]?.value ?? 0}',
+                                style: TextStyle(color: Colors.grey[600]),
+                              )
+                            ])),
                       ],
                     ),
                   ),
@@ -151,8 +150,8 @@ class FolderPage extends StatelessWidget {
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         childAspectRatio: 1,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
+        crossAxisSpacing: 4,
+        mainAxisSpacing: 4,
       ),
       itemCount: folderController.folders.length,
       itemBuilder: (context, index) {
@@ -181,24 +180,25 @@ class FolderPage extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   folder['name'] as String,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 4),
                 Obx(() => Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.layers,
-                      color: Colors.grey,
-                      size: 16,
-                    ),
-                    Text(
-                      ' ${folderController.folderItemCounts[folder['name'] as String]?.value ?? 0}',
-                      style: TextStyle(color: Colors.grey[600]),
-                    )
-                  ],
-                )),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.layers,
+                          color: Colors.grey,
+                          size: 16,
+                        ),
+                        Text(
+                          ' ${folderController.folderItemCounts[folder['name'] as String]?.value ?? 0}',
+                          style: TextStyle(color: Colors.grey[600]),
+                        )
+                      ],
+                    )),
               ],
             ),
           ),
