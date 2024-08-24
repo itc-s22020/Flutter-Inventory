@@ -5,8 +5,8 @@ class Version extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    const version = "0.1.7";
-    const date = "2024/08/21";
+    const version = "1.0.0";
+    const date = "2024/08/24";
 
     return const Text(
       "Version-$version@$date",
